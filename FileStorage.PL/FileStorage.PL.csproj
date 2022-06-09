@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FileStorage.DAL\FileStorage.DAL.csproj" />
+    <ProjectReference Include="..\FileStorage.BLL\FileStorage.BLL.csproj" />
   </ItemGroup>
 
 

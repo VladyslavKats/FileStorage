@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.DAL", "FileStor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.PL", "FileStorage.PL\FileStorage.PL.csproj", "{BA2ACDF9-5E3F-4390-8F39-D4DF5A1A01F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorageTest", "FileStorageTest\FileStorageTest.csproj", "{CC6035DF-AEA4-49CF-BD77-01CC540D3EEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorageTest", "FileStorageTest\FileStorageTest.csproj", "{CC6035DF-AEA4-49CF-BD77-01CC540D3EEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorage.BLL", "FileStorage.BLL\FileStorage.BLL.csproj", "{50EAE00D-E79C-47AA-8EA0-C9784B753368}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{CC6035DF-AEA4-49CF-BD77-01CC540D3EEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC6035DF-AEA4-49CF-BD77-01CC540D3EEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC6035DF-AEA4-49CF-BD77-01CC540D3EEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50EAE00D-E79C-47AA-8EA0-C9784B753368}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50EAE00D-E79C-47AA-8EA0-C9784B753368}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50EAE00D-E79C-47AA-8EA0-C9784B753368}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50EAE00D-E79C-47AA-8EA0-C9784B753368}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
