@@ -13,6 +13,8 @@ namespace FileStorage.BLL.Models
 
         public long Size { get; set; }
 
+        public string ContentType { get; set; }
+
         public string Path { get; set; }
 
         public string? UserId { get; set; }

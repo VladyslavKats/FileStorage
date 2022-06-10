@@ -1,4 +1,5 @@
 ﻿using FileStorage.BLL.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,14 +9,20 @@ namespace FileStorage.BLL.Interfaces
 {
     public interface IDocumentService
     {
-        Task<DocumentDto> AddAsync(DocumentDto document, string directory);
+        Task<DocumentDto> AddAsync(IFormFile file, string directory, string username);
+
+        Task<IEnumerable<DocumentDto>> AddRangeAsync(IEnumerable<IFormFile> files, string directory, string username);
+
+        Task<byte[]> GetDocumentBytesByPathAsync(string path);
 
         Task<DocumentDto> UpdateAsync(DocumentDto document);
-
-        Task<string> GetUrlAsync(int id);
 
         Task DeleteAsync(int id);
 
         Task<IEnumerable<DocumentDto>> GetAllAsync();
+
+        Task<IEnumerable<DocumentDto>> GetAllUserDocumentsAsync(string username);
+
+
     }
 }
