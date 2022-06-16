@@ -16,13 +16,14 @@ namespace FileStorage.DAL.EF
             string adminEmail = "admin@gmail.com";
             string password = "Admin_123";
             string name = "admin";
-
-            User admin = new User { Email = adminEmail, UserName = name };
+            User admin = new User { Email = adminEmail, UserName = name};
             IdentityResult result = await userManager.CreateAsync(admin, password);
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(admin, "Admin");
             }
+           
+            
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using FileStorage.BLL.Interfaces;
+﻿using FileStorage.BLL.Common;
+using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
@@ -25,21 +26,22 @@ namespace FileStorage.BLL
         }
 
 
-        public async Task<AuthenticateResponse> LogIn(AuthenticateModel model)
+        public async Task<AuthenticateResponse> LogInAsync(AuthenticateModel model)
         {
             checkAuthenticateModel(model);
-             var user = await _context.UserManager.FindByNameAsync(model.UserName);
+            var user = await _context.UserManager.FindByNameAsync(model.UserName);
             if (user == null)
-                throw new ArgumentException("User doesnt exist");
+                throw new FileStorageAuthenticateException("User doesnt exist");
             if (!await _context.UserManager.CheckPasswordAsync(user, model.Password))
-                throw new ArgumentException("Incorrect password!");
-            string token = getToken(user);
-            return new AuthenticateResponse { Token = token, UserName = user.UserName };
+                throw new FileStorageAuthenticateException("Incorrect password!");
+            string token = await getTokenAsync(user);
+            bool isAdmin = await  _context.UserManager.IsInRoleAsync(user, "Admin");
+            return new AuthenticateResponse { Token = token, UserName = user.UserName , IsAdmin = isAdmin };
         }
 
         private void checkAuthenticateModel(AuthenticateModel model) {
             if (model == null || string.IsNullOrEmpty(model.UserName) || string.IsNullOrEmpty(model.Password))
-                throw new ArgumentNullException(nameof(model), "Incorrect data!");
+                throw new FileStorageArgumentException( "Incorrect data!");
         }
 
 
@@ -47,12 +49,12 @@ namespace FileStorage.BLL
 
 
 
-        public async Task<AuthenticateResponse> SignUp(RegisterModel model)
+        public async Task<AuthenticateResponse> SignUpAsync(RegisterModel model)
         {
             checkRegisterModel(model);
             var userExist = await _context.UserManager.FindByNameAsync(model.UserName);
             if (userExist != null)
-                throw new ArgumentException("User has already existed!");
+                throw new FileStorageArgumentException("User has already existed!");
             var user = new User
             {
                 Email = model.Email,
@@ -63,7 +65,8 @@ namespace FileStorage.BLL
             if (result.Succeeded) {
                 await _context.UserManager.AddToRoleAsync(user, "User");
             }
-            string token = getToken(user); 
+            string token = await getTokenAsync(user);
+            bool isAdmin = await _context.UserManager.IsInRoleAsync(user, "Admin");
             return new AuthenticateResponse { Token = token , UserName = user.UserName};
         }
 
@@ -71,12 +74,12 @@ namespace FileStorage.BLL
         private void checkRegisterModel(RegisterModel model) {
             if (model == null || string.IsNullOrEmpty(model.UserName)
                || string.IsNullOrEmpty(model.Password) || string.IsNullOrEmpty(model.Email))
-                throw new ArgumentNullException(nameof(model), "Incorrect data!");
+                throw new FileStorageArgumentException( "Incorrect data!");
         }
 
 
 
-        private string getToken(User user)
+        private async Task<string> getTokenAsync(User user)
         {
             var authParams = _options.Value;
 
@@ -84,10 +87,16 @@ namespace FileStorage.BLL
 
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+            var roles =  await _context.UserManager.GetRolesAsync(user);
+
             var claims = new List<Claim>() {
                 new Claim(ClaimTypes.Name , user.UserName),
-                new Claim(ClaimTypes.Role , authParams.DefaultRole)
             };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var token = new JwtSecurityToken(
                     authParams.Issuer,
@@ -98,6 +107,17 @@ namespace FileStorage.BLL
                 );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<bool> CheckUserNameAsync(string userName)
+        {
+            if(string.IsNullOrEmpty(userName))
+            {
+                throw new FileStorageArgumentException("incorrect username!");
+            }
+
+            var user = await _context.UserManager.FindByNameAsync(userName);
+            return user != null;
         }
     }
 }

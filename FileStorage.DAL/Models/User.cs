@@ -8,5 +8,6 @@ namespace FileStorage.DAL.Models
 {
     public class User : IdentityUser
     {
+        
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FileStorage.BLL.Common;
 using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using FileStorage.PL.Models;
@@ -42,18 +43,25 @@ namespace FileStorage.PL.Controllers
         }
 
         [HttpPost("{userName}")]
-        public async Task<ActionResult<IEnumerable<DocumentViewModel>>> AddAsync(string userName,IEnumerable<IFormFile> files ) {
+        public async Task<ActionResult<IEnumerable<DocumentViewModel>>> AddAsync(string userName,[FromForm]IEnumerable<IFormFile> files ) {
             string path = Path.Combine(_webHostEnvironment.ContentRootPath,_configuration.GetSection("Files")["DirectiveName"]);
-            switch (files.Count())
+            try
             {
-                case 0:
-                    return BadRequest();
-                case 1:
-                    var document = await _documentService.AddAsync(files.First() , path, userName);
-                    return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(new DocumentDto[] { document }));
-                default:
-                    var documents = await _documentService.AddRangeAsync(files, path, userName);
-                    return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
+                switch (files.Count())
+                {
+                    case 0:
+                        return BadRequest();
+                    case 1:
+                        var document = await _documentService.AddAsync(files.First(), path, userName);
+                        return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(new DocumentDto[] { document }));
+                    default:
+                        var documents = await _documentService.AddRangeAsync(files, path, userName);
+                        return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
+                }
+            }
+            catch (FileStorageException ex)
+            {
+                return BadRequest(ex.Message);
             }
            
         }
@@ -62,8 +70,16 @@ namespace FileStorage.PL.Controllers
         [Route("download")]
         public async Task<ActionResult> DownloadAsync([FromBody] DocumentDownloadModel model)
         {
-            var bytes = await _documentService.GetDocumentBytesByPathAsync(model.Path);
-            return new FileContentResult(bytes, model.ContentType) { FileDownloadName = model.FileName };
+            try
+            {
+                var bytes = await _documentService.GetDocumentBytesByPathAsync(model.Path);
+                return new FileContentResult(bytes, model.ContentType) { FileDownloadName = model.FileName };
+            }
+            catch (FileStorageException ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

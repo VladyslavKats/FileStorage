@@ -8,8 +8,10 @@ namespace FileStorage.BLL.Interfaces
 {
     public interface IAuthService
     {
-        Task<AuthenticateResponse> LogIn(AuthenticateModel model);
+        Task<AuthenticateResponse> LogInAsync(AuthenticateModel model);
 
-        Task<AuthenticateResponse> SignUp(RegisterModel model);
+        Task<AuthenticateResponse> SignUpAsync(RegisterModel model);
+
+        Task<bool> CheckUserNameAsync(string userName);
     }
 }

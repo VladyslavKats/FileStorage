@@ -32,7 +32,7 @@ namespace FileStorage.BLL
             var user = await _context.UserManager.FindByNameAsync(username);
 
             if (user == null)
-                throw new FileStorageException("Forbidden access to save file for unauthorized user");
+                throw new FileStorageAuthenticateException("Forbidden access to save file for unauthorized user");
             
             string rootPath = Path.Combine(directory, username);
             if(!Directory.Exists(rootPath))
@@ -85,7 +85,7 @@ namespace FileStorage.BLL
             var user = await _context.UserManager.FindByNameAsync(username);
 
             if (user == null)
-                throw new FileStorageException("Forbidden access to save file for unauthorized user");
+                throw new FileStorageAuthenticateException("Forbidden access to save file for unauthorized user");
             string rootPath = Path.Combine(directory, username);
             if (!Directory.Exists(rootPath))
                 Directory.CreateDirectory(rootPath);

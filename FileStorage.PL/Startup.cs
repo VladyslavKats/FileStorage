@@ -41,6 +41,12 @@ namespace FileStorage.PL
 
             services.Configure<AuthOptions>(authOptioinsCofiguration);
 
+            services.AddCors(opt => opt.AddPolicy("AllowAll", builder => {
+                builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            }));
+
 
             services.AddControllers();
             services.AddDbContext<FileStorageContext>(options =>
@@ -56,7 +62,7 @@ namespace FileStorage.PL
 
             services.AddTransient<IStorageUW, StorageUW>();
             services.AddTransient<IDocumentService, DocumentService>();
-
+            services.AddTransient<IAuthService, AuthService>();
 
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -93,6 +99,7 @@ namespace FileStorage.PL
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors("AllowAll");
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

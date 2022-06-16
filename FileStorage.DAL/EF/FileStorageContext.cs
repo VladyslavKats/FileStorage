@@ -11,14 +11,16 @@ namespace FileStorage.DAL.EF
     {
         public FileStorageContext(DbContextOptions<FileStorageContext> options) : base(options)
         {
+           
            Database.EnsureCreated();
 
         }
 
-
-
-        public DbSet<Document> Documents { get; set; } 
-
+        public DbSet<Document> Documents { get; set; }
        
+
+      
+
+        
     }
 }
