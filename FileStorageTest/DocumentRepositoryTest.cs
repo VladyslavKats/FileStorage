@@ -22,7 +22,7 @@ namespace FileStorageTest
             using var context = new FileStorageContext(UnitTestHelper.GetUnitTestDbOptions());
 
             var documentRepository = new DocumentRepository(context);
-            
+
             //Act
             var actual = await documentRepository.GetAllAsync();
             

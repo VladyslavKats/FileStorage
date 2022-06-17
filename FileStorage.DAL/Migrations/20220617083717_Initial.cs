@@ -68,6 +68,25 @@ namespace FileStorage.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Accounts",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Files = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    UsedSpace = table.Column<long>(type: "bigint", nullable: false, defaultValue: 0L)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Accounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Accounts_AspNetUsers_Id",
+                        column: x => x.Id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
@@ -175,6 +194,26 @@ namespace FileStorage.DAL.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "44e52bf8-5b19-4f59-a98d-0d811cfd834c", "44e52bf8-5b19-4f59-a98d-0d811cfd834c", "Admin", "ADMIN" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "4059d78e-f1f3-40b1-885a-ceed4a2da96a", 0, "caa33d64-91d6-4e8d-a9c0-7c080a50d83c", "kac9661@gmail.com", false, false, null, null, "ADMIN", "AQAAAAEAACcQAAAAEBUC1QBjFHAMQVp/3d209c5DAta1dNKKatQxjpde+f4rggwDfFrbQRakk6ldpGr/4Q==", null, false, "47672f71-a370-46bb-8ccf-c0e94584ea69", false, "admin" });
+
+            migrationBuilder.InsertData(
+                table: "Accounts",
+                column: "Id",
+                value: "4059d78e-f1f3-40b1-885a-ceed4a2da96a");
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[] { "44e52bf8-5b19-4f59-a98d-0d811cfd834c", "4059d78e-f1f3-40b1-885a-ceed4a2da96a" });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -222,6 +261,9 @@ namespace FileStorage.DAL.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Accounts");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 

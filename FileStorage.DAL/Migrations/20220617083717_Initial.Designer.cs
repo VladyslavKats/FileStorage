@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FileStorage.DAL.Migrations
 {
     [DbContext(typeof(FileStorageContext))]
-    [Migration("20220616200104_Initial")]
+    [Migration("20220617083717_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,6 +20,34 @@ namespace FileStorage.DAL.Migrations
                 .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.0");
+
+            modelBuilder.Entity("FileStorage.DAL.Models.Account", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Files")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<long>("UsedSpace")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Accounts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "4059d78e-f1f3-40b1-885a-ceed4a2da96a",
+                            Files = 0,
+                            UsedSpace = 0L
+                        });
+                });
 
             modelBuilder.Entity("FileStorage.DAL.Models.Document", b =>
                 {
@@ -113,6 +141,23 @@ namespace FileStorage.DAL.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "4059d78e-f1f3-40b1-885a-ceed4a2da96a",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "caa33d64-91d6-4e8d-a9c0-7c080a50d83c",
+                            Email = "kac9661@gmail.com",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAEAACcQAAAAEBUC1QBjFHAMQVp/3d209c5DAta1dNKKatQxjpde+f4rggwDfFrbQRakk6ldpGr/4Q==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "47672f71-a370-46bb-8ccf-c0e94584ea69",
+                            TwoFactorEnabled = false,
+                            UserName = "admin"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -140,6 +185,15 @@ namespace FileStorage.DAL.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "44e52bf8-5b19-4f59-a98d-0d811cfd834c",
+                            ConcurrencyStamp = "44e52bf8-5b19-4f59-a98d-0d811cfd834c",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -225,6 +279,13 @@ namespace FileStorage.DAL.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "4059d78e-f1f3-40b1-885a-ceed4a2da96a",
+                            RoleId = "44e52bf8-5b19-4f59-a98d-0d811cfd834c"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -244,6 +305,17 @@ namespace FileStorage.DAL.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("FileStorage.DAL.Models.Account", b =>
+                {
+                    b.HasOne("FileStorage.DAL.Models.User", "User")
+                        .WithOne("Account")
+                        .HasForeignKey("FileStorage.DAL.Models.Account", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FileStorage.DAL.Models.Document", b =>
@@ -304,6 +376,11 @@ namespace FileStorage.DAL.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FileStorage.DAL.Models.User", b =>
+                {
+                    b.Navigation("Account");
                 });
 #pragma warning restore 612, 618
         }

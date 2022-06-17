@@ -16,6 +16,8 @@ namespace FileStorage.DAL.Interfaces
 
         IDocumentRepository Documents { get; }
 
+        IAccountRepository Accounts { get; }
+
         Task SaveChangesAsync();
     }
 }

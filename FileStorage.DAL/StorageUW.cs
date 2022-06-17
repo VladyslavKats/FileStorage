@@ -20,7 +20,7 @@ namespace FileStorage.DAL
 
         private RoleManager<IdentityRole> _roleManager;
 
-
+        private IAccountRepository _accountRepository;
 
         public UserManager<User> UserManager {
             get {
@@ -37,6 +37,15 @@ namespace FileStorage.DAL
         public IDocumentRepository Documents{
             get {
                 return _documentRepository ??= new DocumentRepository(_context);
+            }
+        }
+
+
+        public IAccountRepository Accounts
+        {
+            get
+            {
+                return _accountRepository ??= new AccountRepository(_context);
             }
         }
 
