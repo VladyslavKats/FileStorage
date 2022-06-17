@@ -14,6 +14,7 @@ namespace FileStorage.PL.Common
                 .ForMember(uvm => uvm.Name, u => u.MapFrom(u => u.UserName))
                 .ForMember(uvm => uvm.Email, u => u.MapFrom(u => u.Email));
             CreateMap<DocumentDto, DocumentViewModel>();
+            CreateMap<DocumentUpdateModel, DocumentDto>();
         }
     }
 }

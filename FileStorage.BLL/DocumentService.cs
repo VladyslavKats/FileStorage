@@ -5,6 +5,7 @@ using FileStorage.BLL.Models;
 using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,11 +20,13 @@ namespace FileStorage.BLL
     {
         private readonly IStorageUW _context;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public DocumentService(IStorageUW context , IMapper mapper)
+        public DocumentService(IStorageUW context , IMapper mapper , IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
+            _configuration = configuration;
         }
 
 
@@ -33,7 +36,17 @@ namespace FileStorage.BLL
 
             if (user == null)
                 throw new FileStorageAuthenticateException("Forbidden access to save file for unauthorized user");
-            
+            var account = await _context.Accounts.GetByIdAsync(user.Id);
+
+            long maxSize = long.Parse(_configuration.GetSection("Files")["MaxSizeSpace"]);
+
+            long futureMemory = file.Length + account.UsedSpace;
+
+            if (maxSize < futureMemory)
+            {
+                throw new FileStorageException("There is not memory!");
+            }
+
             string rootPath = Path.Combine(directory, username);
             if(!Directory.Exists(rootPath))
                 Directory.CreateDirectory(rootPath);
@@ -59,6 +72,12 @@ namespace FileStorage.BLL
                 UserId = user.Id
             };
             await _context.Documents.AddAsync(document);
+
+           
+            account.Files += 1;
+            account.UsedSpace = futureMemory;
+            await _context.Accounts.UpdateAsync(account);
+
 
             await _context.SaveChangesAsync();
             return _mapper.Map<DocumentDto>(document);
@@ -86,6 +105,19 @@ namespace FileStorage.BLL
 
             if (user == null)
                 throw new FileStorageAuthenticateException("Forbidden access to save file for unauthorized user");
+
+
+            var account = await _context.Accounts.GetByIdAsync(user.Id);
+
+            long maxSize = long.Parse(_configuration.GetSection("Files")["MaxSizeSpace"]);
+
+            long futureMemory = account.UsedSpace + files.Sum(f => f.Length);
+
+            if (maxSize < futureMemory)
+            {
+                throw new FileStorageException("There is not memory!");
+            }
+
             string rootPath = Path.Combine(directory, username);
             if (!Directory.Exists(rootPath))
                 Directory.CreateDirectory(rootPath);
@@ -116,21 +148,38 @@ namespace FileStorage.BLL
                 };
                 result.Add(await _context.Documents.AddAsync(document));
             }
+            account.UsedSpace = futureMemory;
+            account.Files += files.Count();
             await _context.SaveChangesAsync();
             return _mapper.Map<IEnumerable<DocumentDto>>(result.ToArray());
         }
 
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id , string username)
         {
-            var document = await _context.Documents.GetAsync(id);
+            var user = await _context.UserManager.FindByNameAsync(username);
+            if (user == null)
+                return;
+
+            var account = await _context.Accounts.GetByIdAsync(user.Id);
+
+
+            var document = await _context.Documents.GetAsNoTrackingAsync(id);
             if (document == null)
                 return;
 
             File.Delete(document.Path);
+
+            account.Files -= 1;
+
+            account.UsedSpace -= document.Size;
+
             await _context.Documents.DeleteAsync(id);
+            await _context.Accounts.UpdateAsync(account);
             await _context.SaveChangesAsync();
         }
+
+
 
         public async Task<IEnumerable<DocumentDto>> GetAllAsync()
         {
@@ -145,13 +194,15 @@ namespace FileStorage.BLL
             return _mapper.Map<IEnumerable<DocumentDto>>(userDocuments); 
         }
 
+
+
         public async Task<DocumentDto> UpdateAsync(DocumentDto document)
         {
             string oldPath = document.Path;
             string newPath = changePath(document.Path , document.Name);
             string newName = document.Name;
 
-
+            
 
             for (int index = 1; File.Exists(newPath); index++)
             {

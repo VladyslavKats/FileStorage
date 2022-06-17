@@ -20,7 +20,7 @@ namespace FileStorage.DAL
 
         public async Task CreateAsync(string userId)
         {
-            await Task.Run(() => _context.Accounts.Add(new Account { Id = userId }));
+            await Task.Run(() => _context.Accounts.Add(new Account { Id = userId , Files = 0 , UsedSpace = 0}));
         }
 
         public async Task DeleteAsync(string id)

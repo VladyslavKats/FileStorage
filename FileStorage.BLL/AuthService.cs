@@ -36,7 +36,7 @@ namespace FileStorage.BLL
                 throw new FileStorageAuthenticateException("Incorrect password!");
             string token = await getTokenAsync(user);
             bool isAdmin = await  _context.UserManager.IsInRoleAsync(user, "Admin");
-            return new AuthenticateResponse { Token = token, UserName = user.UserName , IsAdmin = isAdmin };
+            return new AuthenticateResponse { Token = token, UserName = user.UserName , IsAdmin = isAdmin , UserId = user.Id };
         }
 
         private void checkAuthenticateModel(AuthenticateModel model) {
@@ -62,12 +62,17 @@ namespace FileStorage.BLL
             };
             var result = await _context.UserManager.CreateAsync(user, model.Password);
 
-            if (result.Succeeded) {
-                await _context.UserManager.AddToRoleAsync(user, "User");
+           
+
+            if (!result.Succeeded) {
+                throw new FileStorageArgumentException("Incorrect data!");
             }
+            await _context.UserManager.AddToRoleAsync(user, "User");
+            await _context.Accounts.CreateAsync(user.Id);
+            await _context.Accounts.SaveAsync();
             string token = await getTokenAsync(user);
             bool isAdmin = await _context.UserManager.IsInRoleAsync(user, "Admin");
-            return new AuthenticateResponse { Token = token , UserName = user.UserName};
+            return new AuthenticateResponse { Token = token , UserName = user.UserName , UserId = user.Id};
         }
 
 

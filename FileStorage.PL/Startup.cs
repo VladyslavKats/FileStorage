@@ -1,3 +1,5 @@
+using AutoMapper;
+using AutoMapperBuilder.Extensions.DependencyInjection;
 using FileStorage.BLL;
 using FileStorage.BLL.Common;
 using FileStorage.BLL.Interfaces;
@@ -58,12 +60,19 @@ namespace FileStorage.PL
             var authOptions = Configuration.GetSection("Auth").Get<AuthOptions>();
 
 
-            services.AddAutoMapper(typeof(MapperConfig) , typeof(MapperConfigViewModel));
+            //services.AddAutoMapper(typeof(MapperConfig) , typeof(MapperConfigViewModel));
+            services.AddAutoMapperBuilder(builder =>
+            {
+                builder.Profiles.AddRange(new Profile[] { new MapperConfigViewModel(), new MapperConfig(Configuration) });
+            });
+
+
+
 
             services.AddTransient<IStorageUW, StorageUW>();
             services.AddTransient<IDocumentService, DocumentService>();
             services.AddTransient<IAuthService, AuthService>();
-
+            services.AddTransient<IStatisticService, StatisticService>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {

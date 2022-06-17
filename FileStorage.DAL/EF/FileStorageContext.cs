@@ -50,14 +50,24 @@ namespace FileStorage.DAL.EF
 
 
 
-            //seed admin role
+           
+
+            //seed admin and user role
             builder.Entity<IdentityRole>().HasData(new IdentityRole
+            {
+                Name = "User",
+                NormalizedName = "USER",
+                Id = ROLE_ID_USER,
+                ConcurrencyStamp = ROLE_ID_USER
+            }, 
+            new IdentityRole
             {
                 Name = "Admin",
                 NormalizedName = "ADMIN",
                 Id = ROLE_ID_ADMIN,
                 ConcurrencyStamp = ROLE_ID_ADMIN
             });
+
 
             //create user
             var admin = new User
@@ -77,7 +87,8 @@ namespace FileStorage.DAL.EF
             //seed user
             builder.Entity<User>().HasData(admin);
 
-            builder.Entity<Account>().HasData(new Account {Id = ADMIN_ID });
+            builder.Entity<Account>()
+               .HasData(new Account { Id = ADMIN_ID, Files = 0, UsedSpace = 0 });
 
             //set user role to admin
             builder.Entity<IdentityUserRole<string>>().HasData(new IdentityUserRole<string>
@@ -86,7 +97,7 @@ namespace FileStorage.DAL.EF
                 UserId = ADMIN_ID
             });
 
-
+           
 
 
             base.OnModelCreating(builder);

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FileStorage.DAL.Migrations
 {
     [DbContext(typeof(FileStorageContext))]
-    [Migration("20220617083717_Initial")]
+    [Migration("20220617144904_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,7 +43,7 @@ namespace FileStorage.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "4059d78e-f1f3-40b1-885a-ceed4a2da96a",
+                            Id = "890b4088-4507-4639-8d28-a926f67c64e7",
                             Files = 0,
                             UsedSpace = 0L
                         });
@@ -145,16 +145,16 @@ namespace FileStorage.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "4059d78e-f1f3-40b1-885a-ceed4a2da96a",
+                            Id = "890b4088-4507-4639-8d28-a926f67c64e7",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "caa33d64-91d6-4e8d-a9c0-7c080a50d83c",
+                            ConcurrencyStamp = "fa0499a0-304e-498f-b08a-ace621c53a74",
                             Email = "kac9661@gmail.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAEAACcQAAAAEBUC1QBjFHAMQVp/3d209c5DAta1dNKKatQxjpde+f4rggwDfFrbQRakk6ldpGr/4Q==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEAck4e7xLWFVu6ENThFSTRNthyF/UD2koEXTaMa86p3bJK5ngFsg9xaoLgXioAIXbA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "47672f71-a370-46bb-8ccf-c0e94584ea69",
+                            SecurityStamp = "cf230bc2-cf01-4721-b81a-b18c71f8efbe",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         });
@@ -189,8 +189,15 @@ namespace FileStorage.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "44e52bf8-5b19-4f59-a98d-0d811cfd834c",
-                            ConcurrencyStamp = "44e52bf8-5b19-4f59-a98d-0d811cfd834c",
+                            Id = "fc4473cc-efb4-44fc-8658-c6b4c2cd5573",
+                            ConcurrencyStamp = "fc4473cc-efb4-44fc-8658-c6b4c2cd5573",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new
+                        {
+                            Id = "8603ea1d-58cc-4d2f-b9b3-08c5bebeae72",
+                            ConcurrencyStamp = "8603ea1d-58cc-4d2f-b9b3-08c5bebeae72",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -283,8 +290,8 @@ namespace FileStorage.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "4059d78e-f1f3-40b1-885a-ceed4a2da96a",
-                            RoleId = "44e52bf8-5b19-4f59-a98d-0d811cfd834c"
+                            UserId = "890b4088-4507-4639-8d28-a926f67c64e7",
+                            RoleId = "8603ea1d-58cc-4d2f-b9b3-08c5bebeae72"
                         });
                 });
 

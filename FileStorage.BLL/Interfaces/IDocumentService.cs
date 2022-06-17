@@ -17,7 +17,7 @@ namespace FileStorage.BLL.Interfaces
 
         Task<DocumentDto> UpdateAsync(DocumentDto document);
 
-        Task DeleteAsync(int id);
+        Task DeleteAsync(int id , string username);
 
         Task<IEnumerable<DocumentDto>> GetAllAsync();
 

@@ -16,6 +16,8 @@ namespace FileStorage.DAL.Interfaces
 
         Task<Document> GetAsync(int id);
 
+        Task<Document> GetAsNoTrackingAsync(int id);
+
         Task<IEnumerable<Document>> GetAllAsync();
 
         Task SaveAsync();

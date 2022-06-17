@@ -42,7 +42,16 @@ namespace FileStorage.PL.Controllers
             return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
         }
 
-        [HttpPost("{userName}")]
+
+        [HttpGet("{userName}")]
+        public async Task<ActionResult<IEnumerable<DocumentViewModel>>> GetAllByUserAsync(string userName)
+        {
+            var documents = await _documentService.GetAllUserDocumentsAsync(userName);
+            return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
+        }
+
+
+        [HttpPost("upload/{userName}")]
         public async Task<ActionResult<IEnumerable<DocumentViewModel>>> AddAsync(string userName,[FromForm]IEnumerable<IFormFile> files ) {
             string path = Path.Combine(_webHostEnvironment.ContentRootPath,_configuration.GetSection("Files")["DirectiveName"]);
             try
@@ -74,6 +83,40 @@ namespace FileStorage.PL.Controllers
             {
                 var bytes = await _documentService.GetDocumentBytesByPathAsync(model.Path);
                 return new FileContentResult(bytes, model.ContentType) { FileDownloadName = model.FileName };
+            }
+            catch (FileStorageException ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<DocumentViewModel>> UploadAsync([FromBody]DocumentUpdateModel model )
+        {
+            try
+            {
+                var document = _mapper.Map<DocumentDto>(model);
+                var result = await _documentService.UpdateAsync(document);
+                return Ok(_mapper.Map<DocumentViewModel>(result));
+            }
+            catch (FileStorageException ex) 
+            {
+
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+
+        [HttpDelete]
+        public async Task<ActionResult> DeleteAsync([FromQuery]DocumentDeleteModel model)
+        {
+            try
+            {
+
+                await _documentService.DeleteAsync(model.Id , model.UserName);
+                return Ok();
             }
             catch (FileStorageException ex)
             {

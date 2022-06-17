@@ -36,6 +36,11 @@ namespace FileStorage.DAL
             return  await _context.Documents.Include(d => d.User).ToArrayAsync();
         }
 
+        public async Task<Document> GetAsNoTrackingAsync(int id)
+        {
+            return await _context.Documents.Include(d => d.User).AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
+        }
+
         public async Task<Document> GetAsync(int id)
         {
             return await _context.Documents.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
