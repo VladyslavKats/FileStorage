@@ -41,7 +41,7 @@ namespace FileStorage.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "890b4088-4507-4639-8d28-a926f67c64e7",
+                            Id = "5681fc73-841d-48cd-9b99-ea7101fd3665",
                             Files = 0,
                             UsedSpace = 0L
                         });
@@ -143,16 +143,16 @@ namespace FileStorage.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "890b4088-4507-4639-8d28-a926f67c64e7",
+                            Id = "5681fc73-841d-48cd-9b99-ea7101fd3665",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "fa0499a0-304e-498f-b08a-ace621c53a74",
+                            ConcurrencyStamp = "f46aa24c-8846-4148-aae1-3290d9ef45b7",
                             Email = "kac9661@gmail.com",
-                            EmailConfirmed = false,
+                            EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAEAACcQAAAAEAck4e7xLWFVu6ENThFSTRNthyF/UD2koEXTaMa86p3bJK5ngFsg9xaoLgXioAIXbA==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEHK+bg2TpNCR9EJVlrhIq3ZiptCWuSJw0ume75OWg6k7kT3a/3pPGyHvmt8iwpYpPg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "cf230bc2-cf01-4721-b81a-b18c71f8efbe",
+                            SecurityStamp = "68d614d6-5db0-4658-b08f-3c8f59ffb951",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         });
@@ -187,15 +187,15 @@ namespace FileStorage.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "fc4473cc-efb4-44fc-8658-c6b4c2cd5573",
-                            ConcurrencyStamp = "fc4473cc-efb4-44fc-8658-c6b4c2cd5573",
+                            Id = "de24e788-d900-4f82-9805-21c78f86290d",
+                            ConcurrencyStamp = "de24e788-d900-4f82-9805-21c78f86290d",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "8603ea1d-58cc-4d2f-b9b3-08c5bebeae72",
-                            ConcurrencyStamp = "8603ea1d-58cc-4d2f-b9b3-08c5bebeae72",
+                            Id = "a5b3cf3a-be24-465a-8caa-b15b77eb4a0b",
+                            ConcurrencyStamp = "a5b3cf3a-be24-465a-8caa-b15b77eb4a0b",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -288,8 +288,8 @@ namespace FileStorage.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "890b4088-4507-4639-8d28-a926f67c64e7",
-                            RoleId = "8603ea1d-58cc-4d2f-b9b3-08c5bebeae72"
+                            UserId = "5681fc73-841d-48cd-9b99-ea7101fd3665",
+                            RoleId = "a5b3cf3a-be24-465a-8caa-b15b77eb4a0b"
                         });
                 });
 
@@ -326,8 +326,9 @@ namespace FileStorage.DAL.Migrations
             modelBuilder.Entity("FileStorage.DAL.Models.Document", b =>
                 {
                     b.HasOne("FileStorage.DAL.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithMany("Documents")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });
@@ -386,6 +387,8 @@ namespace FileStorage.DAL.Migrations
             modelBuilder.Entity("FileStorage.DAL.Models.User", b =>
                 {
                     b.Navigation("Account");
+
+                    b.Navigation("Documents");
                 });
 #pragma warning restore 612, 618
         }

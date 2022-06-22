@@ -30,6 +30,12 @@ namespace FileStorage.DAL.EF
             string ROLE_ID_ADMIN = Guid.NewGuid().ToString();
 
 
+            builder.Entity<Document>()
+                .HasOne(d => d.User)
+                .WithMany(u => u.Documents)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+
 
             builder.Entity<Account>()
                 .Property(a => a.Files)
@@ -74,7 +80,7 @@ namespace FileStorage.DAL.EF
             {
                 Id = ADMIN_ID,
                 Email = "kac9661@gmail.com",
-                EmailConfirmed = false,
+                EmailConfirmed = true,
                 UserName = "admin",
                 NormalizedUserName = "ADMIN"
               

@@ -1,6 +1,7 @@
 ﻿using FileStorage.BLL.Common;
 using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -103,5 +104,20 @@ namespace FileStorage.PL.Controllers
             }
         }
 
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        [HttpDelete("{userName}")]
+        public async Task<ActionResult> DeleteAsync(string userName)
+        {
+            try
+            {
+                await _authService.RemoveUserAsync(userName);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

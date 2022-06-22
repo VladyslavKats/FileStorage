@@ -15,5 +15,7 @@ namespace FileStorage.BLL.Interfaces
         Task<bool> CheckUserNameAsync(string userName);
 
         Task<bool> ConfirmEmailAsync(string userName , string token);
+
+        Task RemoveUserAsync(string userName);
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -152,6 +153,23 @@ namespace FileStorage.BLL
             var result = await _context.UserManager.ConfirmEmailAsync(user, codeDecoded);
             return result.Succeeded;
             
+        }
+
+        public async Task RemoveUserAsync(string userName)
+        {
+            var user = await _context.UserManager.FindByNameAsync(userName);
+
+            if(user == null)
+                throw new FileStorageArgumentException("user does not exist");
+            var documents = await _context.Documents.GetAllAsNoTrackingAsync();
+            foreach (var doc in documents)
+            {
+                File.Delete(doc.Path);
+                await _context.Documents.DeleteAsync(doc.Id);
+            }
+            await _context.SaveChangesAsync();
+            await _context.UserManager.DeleteAsync(user);
+           
         }
     }
 }

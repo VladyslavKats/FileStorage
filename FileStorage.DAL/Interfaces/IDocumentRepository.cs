@@ -20,6 +20,8 @@ namespace FileStorage.DAL.Interfaces
 
         Task<IEnumerable<Document>> GetAllAsync();
 
+        Task<IEnumerable<Document>> GetAllAsNoTrackingAsync();
+
         Task SaveAsync();
     }
 }
