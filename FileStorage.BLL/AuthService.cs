@@ -3,6 +3,8 @@ using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -18,11 +20,13 @@ namespace FileStorage.BLL
     {
         private readonly IStorageUW _context;
         private readonly IOptions<AuthOptions> _options;
+        private readonly IEmailService _emailService;
 
-        public AuthService(IStorageUW context , IOptions<AuthOptions> options)
+        public AuthService(IStorageUW context , IOptions<AuthOptions> options , IEmailService emailService)
         {
             _context = context;
             _options = options;
+            _emailService = emailService;
         }
 
 
@@ -33,7 +37,11 @@ namespace FileStorage.BLL
             if (user == null)
                 throw new FileStorageAuthenticateException("User doesnt exist");
             if (!await _context.UserManager.CheckPasswordAsync(user, model.Password))
-                throw new FileStorageAuthenticateException("Incorrect password!");
+                throw new FileStorageAuthenticateException("Incorrect password");
+            if (user.EmailConfirmed == false)
+            {
+                throw new FileStorageAuthenticateException("Confirm email");
+            }
             string token = await getTokenAsync(user);
             bool isAdmin = await  _context.UserManager.IsInRoleAsync(user, "Admin");
             return new AuthenticateResponse { Token = token, UserName = user.UserName , IsAdmin = isAdmin , UserId = user.Id };
@@ -41,7 +49,7 @@ namespace FileStorage.BLL
 
         private void checkAuthenticateModel(AuthenticateModel model) {
             if (model == null || string.IsNullOrEmpty(model.UserName) || string.IsNullOrEmpty(model.Password))
-                throw new FileStorageArgumentException( "Incorrect data!");
+                throw new FileStorageArgumentException( "Incorrect data");
         }
 
 
@@ -49,37 +57,46 @@ namespace FileStorage.BLL
 
 
 
-        public async Task<AuthenticateResponse> SignUpAsync(RegisterModel model)
+        public async Task<bool> SignUpAsync(RegisterModel model , string urlForConfirmation)
         {
             checkRegisterModel(model);
             var userExist = await _context.UserManager.FindByNameAsync(model.UserName);
             if (userExist != null)
-                throw new FileStorageArgumentException("User has already existed!");
+                throw new FileStorageArgumentException("User has already existed");
             var user = new User
             {
                 Email = model.Email,
                 UserName = model.UserName
             };
             var result = await _context.UserManager.CreateAsync(user, model.Password);
-
-           
-
-            if (!result.Succeeded) {
-                throw new FileStorageArgumentException("Incorrect data!");
-            }
+            if (!result.Succeeded)
+                throw new FileStorageAuthenticateException();
             await _context.UserManager.AddToRoleAsync(user, "User");
+
+
+            var token = await _context.UserManager.GenerateEmailConfirmationTokenAsync(user);
+
+            await sendCofirmationToken(token , user.UserName , user.Email, urlForConfirmation);
+            
             await _context.Accounts.CreateAsync(user.Id);
-            await _context.Accounts.SaveAsync();
-            string token = await getTokenAsync(user);
-            bool isAdmin = await _context.UserManager.IsInRoleAsync(user, "Admin");
-            return new AuthenticateResponse { Token = token , UserName = user.UserName , UserId = user.Id};
+            await _context.Accounts.SaveAsync(); 
+            return result.Succeeded;
+        }
+
+        private async Task sendCofirmationToken(string token , string userName , string email, string url)
+        {
+            byte[] tokenGeneratedBytes = Encoding.UTF8.GetBytes(token);
+            var codeEncoded = WebEncoders.Base64UrlEncode(tokenGeneratedBytes);
+            string urlToClick = $"{url}api/Account/confirmEmail?username={userName}&token={codeEncoded}";
+            string body = $"Please confirm your email - <a href=\"{urlToClick}\">confirm</a>";
+            await _emailService.SendAsync(new MailMessage {Subject = "Confirm email" , To = email , Body = body});
         }
 
 
         private void checkRegisterModel(RegisterModel model) {
             if (model == null || string.IsNullOrEmpty(model.UserName)
                || string.IsNullOrEmpty(model.Password) || string.IsNullOrEmpty(model.Email))
-                throw new FileStorageArgumentException( "Incorrect data!");
+                throw new FileStorageArgumentException( "Incorrect data");
         }
 
 
@@ -118,11 +135,23 @@ namespace FileStorage.BLL
         {
             if(string.IsNullOrEmpty(userName))
             {
-                throw new FileStorageArgumentException("incorrect username!");
+                throw new FileStorageArgumentException("incorrect username");
             }
 
             var user = await _context.UserManager.FindByNameAsync(userName);
             return user != null;
+        }
+
+        public async Task<bool> ConfirmEmailAsync(string userName, string token)
+        {
+            
+            var user = await _context.UserManager.FindByNameAsync(userName);
+            var codeDecodedBytes = WebEncoders.Base64UrlDecode(token);
+            var codeDecoded = Encoding.UTF8.GetString(codeDecodedBytes);
+            
+            var result = await _context.UserManager.ConfirmEmailAsync(user, codeDecoded);
+            return result.Succeeded;
+            
         }
     }
 }

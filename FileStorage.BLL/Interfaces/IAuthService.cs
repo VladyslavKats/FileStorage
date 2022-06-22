@@ -10,8 +10,10 @@ namespace FileStorage.BLL.Interfaces
     {
         Task<AuthenticateResponse> LogInAsync(AuthenticateModel model);
 
-        Task<AuthenticateResponse> SignUpAsync(RegisterModel model);
+        Task<bool> SignUpAsync(RegisterModel model, string urlForConfirmation);
 
         Task<bool> CheckUserNameAsync(string userName);
+
+        Task<bool> ConfirmEmailAsync(string userName , string token);
     }
 }

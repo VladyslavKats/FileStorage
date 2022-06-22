@@ -3,6 +3,7 @@ using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace FileStorage.PL.Controllers
@@ -12,10 +13,11 @@ namespace FileStorage.PL.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAuthService _authService;
-
-        public AccountController(IAuthService authService)
+       
+        public AccountController(IAuthService authService )
         {
             _authService = authService;
+            
         }
 
 
@@ -24,6 +26,7 @@ namespace FileStorage.PL.Controllers
         {
             try
             {
+               
                 bool result = await _authService.CheckUserNameAsync(username);
                 return result;
             }
@@ -36,12 +39,21 @@ namespace FileStorage.PL.Controllers
 
         [HttpPost]
         [Route("signup")]
-        public async Task<ActionResult<AuthenticateResponse>> SignUpAsync(RegisterModel model)
+        public async Task<ActionResult> SignUpAsync(RegisterModel model)
         {
             try
             {
-                var result = await _authService.SignUpAsync(model); 
-                return Ok(result);
+                var request = HttpContext.Request;
+               
+                var url = $"{request.Scheme}://{request.Host}/";
+                var result = await _authService.SignUpAsync(model , url);
+                if (result) {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
             catch (FileStorageException ex)
             {
@@ -50,6 +62,30 @@ namespace FileStorage.PL.Controllers
             }
         }
 
+
+
+        [HttpGet]
+        [Route("confirmEmail")]
+        public async Task<ActionResult> ConfirmEmail([FromQuery]string username , [FromQuery]string token)
+        {
+            try
+            {
+                var result = await _authService.ConfirmEmailAsync(username , token);
+                if (result)
+                {
+                    return Ok("Email has been confirmed!");
+                }
+                else
+                {
+                    return BadRequest("Error.Try later");
+                }
+            }
+            catch (Exception exception)
+            {
+
+                return BadRequest("Error.Try later");
+            }
+        }
 
         [HttpPost]
         [Route("login")]

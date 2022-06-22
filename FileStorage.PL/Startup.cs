@@ -40,13 +40,21 @@ namespace FileStorage.PL
         public void ConfigureServices(IServiceCollection services)
         {
             var authOptioinsCofiguration = Configuration.GetSection("Auth");
+            var smtpOptioinsCofiguration = Configuration.GetSection("Smtp");
 
             services.Configure<AuthOptions>(authOptioinsCofiguration);
+            services.Configure<SmtpOptions>(smtpOptioinsCofiguration);
+            
+           
+
 
             services.AddCors(opt => opt.AddPolicy("AllowAll", builder => {
-                builder.AllowAnyOrigin()
+                builder
+                .AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyHeader();
+                .AllowAnyHeader()
+                ;
+                
             }));
 
 
@@ -55,12 +63,14 @@ namespace FileStorage.PL
                  options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
                 
 
-            services.AddIdentity<User, IdentityRole>()
-                .AddEntityFrameworkStores<FileStorageContext>();
+            services.AddIdentity<User, IdentityRole>(opt => opt.SignIn.RequireConfirmedEmail = true)
+                .AddEntityFrameworkStores<FileStorageContext>()
+                .AddDefaultTokenProviders();
+
             var authOptions = Configuration.GetSection("Auth").Get<AuthOptions>();
 
 
-            //services.AddAutoMapper(typeof(MapperConfig) , typeof(MapperConfigViewModel));
+            
             services.AddAutoMapperBuilder(builder =>
             {
                 builder.Profiles.AddRange(new Profile[] { new MapperConfigViewModel(), new MapperConfig(Configuration) });
@@ -73,6 +83,7 @@ namespace FileStorage.PL
             services.AddTransient<IDocumentService, DocumentService>();
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IStatisticService, StatisticService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {

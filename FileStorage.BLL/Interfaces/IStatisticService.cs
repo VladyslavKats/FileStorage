@@ -11,5 +11,7 @@ namespace FileStorage.BLL.Interfaces
         Task<StatisticModel> GetUserStatisticAsync(string userId);
 
         Task<IEnumerable<StatisticModel>> GetAllStatisticAsync();
+
+        Task<TotalStatisticModel> GetTotalStatisticAsync();
     }
 }

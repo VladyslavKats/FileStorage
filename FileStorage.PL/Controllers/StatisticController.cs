@@ -1,6 +1,7 @@
 ﻿using FileStorage.BLL.Common;
 using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace FileStorage.PL.Controllers
 {
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [Route("api/[controller]")]
     [ApiController]
     public class StatisticController : ControllerBase
@@ -19,6 +21,7 @@ namespace FileStorage.PL.Controllers
            _statisticService = statisticService;
         }
 
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StatisticModel>>> GetAllAsync()
         {
@@ -34,6 +37,7 @@ namespace FileStorage.PL.Controllers
             }
         }
 
+        
         [HttpGet("{id}")]
         public async Task<ActionResult<StatisticModel>> GetByUserIdAsync(string id)
         {
@@ -48,5 +52,23 @@ namespace FileStorage.PL.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        [HttpGet]
+        [Route("total")]
+        public async Task<ActionResult<TotalStatisticModel>> GetStatisticAsync()
+        {
+            try
+            {
+                var result = await _statisticService.GetTotalStatisticAsync();
+                return Ok(result);
+            }
+            catch (FileStorageException ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

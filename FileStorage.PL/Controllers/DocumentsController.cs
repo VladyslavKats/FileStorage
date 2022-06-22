@@ -3,6 +3,7 @@ using FileStorage.BLL.Common;
 using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using FileStorage.PL.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ using System.Threading.Tasks;
 
 namespace FileStorage.PL.Controllers
 {
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [Route("api/[controller]")]
     [ApiController]
     public class DocumentsController : ControllerBase
@@ -35,6 +37,7 @@ namespace FileStorage.PL.Controllers
             _configuration = configuration;
         }
 
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DocumentViewModel>>> GetAllAsync()
         {
@@ -92,7 +95,7 @@ namespace FileStorage.PL.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<DocumentViewModel>> UploadAsync([FromBody]DocumentUpdateModel model )
+        public async Task<ActionResult<DocumentViewModel>> EditAsync([FromBody]DocumentUpdateModel model )
         {
             try
             {
