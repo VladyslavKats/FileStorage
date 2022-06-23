@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
@@ -41,9 +42,11 @@ namespace FileStorage.PL
         {
             var authOptioinsCofiguration = Configuration.GetSection("Auth");
             var smtpOptioinsCofiguration = Configuration.GetSection("Smtp");
+            var filesOptionsConfiguration = Configuration.GetSection("Files");
 
             services.Configure<AuthOptions>(authOptioinsCofiguration);
             services.Configure<SmtpOptions>(smtpOptioinsCofiguration);
+            services.Configure<FilesOptions>(filesOptionsConfiguration);
             
            
 
@@ -52,8 +55,7 @@ namespace FileStorage.PL
                 builder
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyHeader()
-                ;
+                .AllowAnyHeader();
                 
             }));
 
@@ -67,13 +69,16 @@ namespace FileStorage.PL
                 .AddEntityFrameworkStores<FileStorageContext>()
                 .AddDefaultTokenProviders();
 
-            var authOptions = Configuration.GetSection("Auth").Get<AuthOptions>();
 
 
-            
+
+
+
+
+            var filesOptions = Configuration.GetSection("Files").Get<FilesOptions>();
             services.AddAutoMapperBuilder(builder =>
             {
-                builder.Profiles.AddRange(new Profile[] { new MapperConfigViewModel(), new MapperConfig(Configuration) });
+                builder.Profiles.AddRange(new Profile[] { new MapperConfigViewModel(), new MapperConfig(filesOptions) });
             });
 
 
@@ -84,6 +89,9 @@ namespace FileStorage.PL
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IStatisticService, StatisticService>();
             services.AddScoped<IEmailService, EmailService>();
+
+
+            var authOptions = Configuration.GetSection("Auth").Get<AuthOptions>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {

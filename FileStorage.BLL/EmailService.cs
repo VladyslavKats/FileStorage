@@ -9,15 +9,26 @@ using System.Threading.Tasks;
 
 namespace FileStorage.BLL
 {
+    /// <summary>
+    /// Service for sending letters by email
+    /// </summary>
     public class EmailService : IEmailService
     {
         private readonly IOptions<SmtpOptions> _options;
-
+        /// <summary>
+        /// Creates instance of service
+        /// </summary>
+        /// <param name="options">Configuration for service</param>
         public EmailService(IOptions<SmtpOptions> options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Send message by email
+        /// </summary>
+        /// <param name="message">Message wit data</param>
+        /// <returns></returns>
         public async Task SendAsync(MailMessage message)
         {
             await Task.Run(() => {

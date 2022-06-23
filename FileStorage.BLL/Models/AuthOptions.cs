@@ -5,6 +5,9 @@ using System.Text;
 
 namespace FileStorage.BLL.Models
 {
+    /// <summary>
+    /// Model of configuration for generate jwt token
+    /// </summary>
     public class AuthOptions
     {
         public string Issuer { get; set; }

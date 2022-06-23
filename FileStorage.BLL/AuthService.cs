@@ -17,12 +17,21 @@ using System.Threading.Tasks;
 
 namespace FileStorage.BLL
 {
+    /// <summary>
+    /// Service for managing users , registration and authentication
+    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IStorageUW _context;
         private readonly IOptions<AuthOptions> _options;
         private readonly IEmailService _emailService;
 
+        /// <summary>
+        /// Creates instance of service
+        /// </summary>
+        /// <param name="context">Class for managing file storage</param>
+        /// <param name="options">Options for generate jwt token</param>
+        /// <param name="emailService">Service for sending letters by email</param>
         public AuthService(IStorageUW context , IOptions<AuthOptions> options , IEmailService emailService)
         {
             _context = context;
@@ -30,13 +39,21 @@ namespace FileStorage.BLL
             _emailService = emailService;
         }
 
-
+        /// <summary>
+        /// Login user 
+        /// </summary>
+        /// <param name="model">model for login user</param>
+        /// <returns>Data of user and jwt token</returns>
+        /// <exception cref="FileStorageAuthenticateException">Occurs if user did not pass viladation</exception>
         public async Task<AuthenticateResponse> LogInAsync(AuthenticateModel model)
         {
-            checkAuthenticateModel(model);
+            if (model == null)
+                throw new FileStorageArgumentException("Incorrect data");
+
             var user = await _context.UserManager.FindByNameAsync(model.UserName);
+
             if (user == null)
-                throw new FileStorageAuthenticateException("User doesnt exist");
+                throw new FileStorageAuthenticateException("User does not exist");
             if (!await _context.UserManager.CheckPasswordAsync(user, model.Password))
                 throw new FileStorageAuthenticateException("Incorrect password");
             if (user.EmailConfirmed == false)
@@ -48,19 +65,25 @@ namespace FileStorage.BLL
             return new AuthenticateResponse { Token = token, UserName = user.UserName , IsAdmin = isAdmin , UserId = user.Id };
         }
 
-        private void checkAuthenticateModel(AuthenticateModel model) {
-            if (model == null || string.IsNullOrEmpty(model.UserName) || string.IsNullOrEmpty(model.Password))
-                throw new FileStorageArgumentException( "Incorrect data");
-        }
+      
 
 
 
 
 
-
+        /// <summary>
+        /// Registrate user
+        /// </summary>
+        /// <param name="model">Data for registration</param>
+        /// <param name="urlForConfirmation">Basic app url for email confirmation</param>
+        /// <returns>True if user was created  , false - if not</returns>
+        /// <exception cref="FileStorageArgumentException">Occurs when data is not correct</exception>
+        /// <exception cref="FileStorageAuthenticateException">Occurs when user was not created</exception>
         public async Task<bool> SignUpAsync(RegisterModel model , string urlForConfirmation)
         {
-            checkRegisterModel(model);
+            if (model == null)
+                throw new FileStorageArgumentException("Incorrect data");
+            
             var userExist = await _context.UserManager.FindByNameAsync(model.UserName);
             if (userExist != null)
                 throw new FileStorageArgumentException("User has already existed");
@@ -94,12 +117,7 @@ namespace FileStorage.BLL
         }
 
 
-        private void checkRegisterModel(RegisterModel model) {
-            if (model == null || string.IsNullOrEmpty(model.UserName)
-               || string.IsNullOrEmpty(model.Password) || string.IsNullOrEmpty(model.Email))
-                throw new FileStorageArgumentException( "Incorrect data");
-        }
-
+   
 
 
         private async Task<string> getTokenAsync(User user)
@@ -132,6 +150,12 @@ namespace FileStorage.BLL
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        /// <summary>
+        /// Returns true if user`s name is used 
+        /// </summary>
+        /// <param name="userName">User`s name</param>
+        /// <returns>Ttrue if user`s name is used  </returns>
+        /// <exception cref="FileStorageArgumentException"></exception>
         public async Task<bool> CheckUserNameAsync(string userName)
         {
             if(string.IsNullOrEmpty(userName))
@@ -143,6 +167,14 @@ namespace FileStorage.BLL
             return user != null;
         }
 
+
+
+        /// <summary>
+        /// Confirms user`s email
+        /// </summary>
+        /// <param name="userName">User`s name</param>
+        /// <param name="token">Token for confirmation</param>
+        /// <returns>True if user has confirmated email</returns>
         public async Task<bool> ConfirmEmailAsync(string userName, string token)
         {
             
@@ -155,6 +187,12 @@ namespace FileStorage.BLL
             
         }
 
+        /// <summary>
+        /// Deletes user , all files and his account
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        /// <exception cref="FileStorageArgumentException">Occurs if user does not exist</exception>
         public async Task RemoveUserAsync(string userName)
         {
             var user = await _context.UserManager.FindByNameAsync(userName);

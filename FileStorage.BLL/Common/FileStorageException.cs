@@ -5,6 +5,9 @@ using System.Text;
 
 namespace FileStorage.BLL.Common
 {
+    /// <summary>
+    /// Represents errors that occur during file storage execution
+    /// </summary>
     [Serializable]
     public class FileStorageException : Exception
     {
