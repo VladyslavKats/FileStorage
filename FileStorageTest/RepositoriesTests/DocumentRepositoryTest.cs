@@ -10,12 +10,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileStorageTest
+namespace FileStorageTest.RepositoriesTests
 {
     [TestFixture]
     internal class DocumentRepositoryTest
     {
-       [Test]
+        [Test]
         public async Task DocumentRepository_GetAllAsync_ReturnsValues()
         {
             //Arrange
@@ -25,14 +25,15 @@ namespace FileStorageTest
 
             //Act
             var actual = await documentRepository.GetAllAsync();
-            
+
             //Assert
-            Assert.That(actual.Count(), Is.Not.EqualTo(0) , "GetAllAsync method does not return values");
+            Assert.That(actual.Count(), Is.Not.EqualTo(0), "GetAllAsync method does not return values");
         }
 
 
         [Test]
-        public async Task DocumentRepository_GetAsync_ReturnsSingleValue() {
+        public async Task DocumentRepository_GetAsync_ReturnsSingleValue()
+        {
             //Arrange
             using var context = new FileStorageContext(UnitTestHelper.GetUnitTestDbOptions());
 
@@ -49,7 +50,8 @@ namespace FileStorageTest
 
 
         [Test]
-        public async Task DocumentRepository_AddAsync_AddsValueToBase() {
+        public async Task DocumentRepository_AddAsync_AddsValueToBase()
+        {
             //Arrange
             using var context = new FileStorageContext(UnitTestHelper.GetUnitTestDbOptions());
 
@@ -60,25 +62,26 @@ namespace FileStorageTest
             //Act
             var actual = await documentRepository.AddAsync(document);
             context.SaveChanges();
-            
+
 
 
 
             //Assert
             Assert.That(context.Documents.Count(), Is.EqualTo(5), "AddAsync method does not add value to database");
-            Assert.That(actual.Id,Is.EqualTo(5) , "AddAsync method does not return correct value");
+            Assert.That(actual.Id, Is.EqualTo(5), "AddAsync method does not return correct value");
 
         }
 
 
         [Test]
-        public async Task DocumentRepository_UpdateAsync_ChangesValue() {
+        public async Task DocumentRepository_UpdateAsync_ChangesValue()
+        {
             //Arrange
             using var context = new FileStorageContext(UnitTestHelper.GetUnitTestDbOptions());
 
             var documentRepository = new DocumentRepository(context);
 
-            var expected = new Document {Id = 4 ,  Name = "newName.txt", Size = 25 };
+            var expected = new Document { Id = 4, Name = "newName.txt", Size = 25 };
 
             var before = context.Documents.AsNoTracking().FirstOrDefault(d => d.Id == expected.Id);
 
@@ -90,10 +93,11 @@ namespace FileStorageTest
             //Assert
             Assert.That(actual.Name, Is.EqualTo(expected.Name), "UpdateAsync method does not change name");
             Assert.That(actual.Size, Is.EqualTo(expected.Size), "UpdateAsync method does not change size");
-            Assert.That(returnValue , Is.Not.Null);
+            Assert.That(returnValue, Is.Not.Null);
         }
         [Test]
-        public async Task DocumentRepository_DeleteAsync_RemovesValueFromBase() {
+        public async Task DocumentRepository_DeleteAsync_RemovesValueFromBase()
+        {
             //Arrage
             using var context = new FileStorageContext(UnitTestHelper.GetUnitTestDbOptions());
 
@@ -121,7 +125,7 @@ namespace FileStorageTest
             int expectdCount = 3;
 
             //Act
-            context.Documents.Remove(new Document {Id = 1 });
+            context.Documents.Remove(new Document { Id = 1 });
             await documentRepository.SaveAsync();
             var actual = context.Documents.Count();
             //Assert

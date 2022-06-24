@@ -21,7 +21,7 @@ namespace FileStorage.BLL
         private readonly IStorageUW _context;
         private readonly IMapper _mapper;
         private readonly IOptions<FilesOptions> _options;
-        private readonly IConfiguration _configuration;
+        
         /// <summary>
         /// Creates instance of service
         /// </summary>
@@ -56,7 +56,7 @@ namespace FileStorage.BLL
             var accounts = await _context.Accounts.GetAllAsync();
             var totalFiles = accounts.Sum(a => a.Files);
             var totalSpace = accounts.Sum(a => a.UsedSpace);
-            var maxSpace = long.Parse(_configuration.GetSection("Files")["TotalSpace"]);
+            var maxSpace = _options.Value.TotalSpace;
             return new TotalStatisticModel { TotalFiles = totalFiles, TotalUsedSpace = totalSpace , MaxSpace = maxSpace };
         }
         /// <summary>

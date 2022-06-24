@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileStorageTest
+namespace FileStorageTest.RepositoriesTests
 {
     [TestFixture]
     public class AccountRepositoryTest
@@ -31,11 +31,12 @@ namespace FileStorageTest
             context.SaveChanges();
             int actual = context.Accounts.Count();
             //Assert
-            Assert.That(actual , Is.EqualTo(expected) , "CreateAsync method does not work!");
+            Assert.That(actual, Is.EqualTo(expected), "CreateAsync method does not work!");
         }
 
         [Test]
-        public async Task AccoutRepository_UpdateAsync_UpdatesValue() {
+        public async Task AccoutRepository_UpdateAsync_UpdatesValue()
+        {
             //Arrange
             using var context = new FileStorageContext(UnitTestHelper.GetUnitTestDbOptions());
 
@@ -71,7 +72,7 @@ namespace FileStorageTest
             var actual = await accountRepository.GetByIdAsync(user.Id);
 
             //Assert
-            Assert.That(actual , Is.Not.Null , "GetByIdAsync method does not return value!");
+            Assert.That(actual, Is.Not.Null, "GetByIdAsync method does not return value!");
         }
 
         [Test]
@@ -87,7 +88,7 @@ namespace FileStorageTest
             var actual = await accountRepository.GetAllAsync();
 
             //Assert
-            Assert.That(actual.Count(),Is.EqualTo(expectedCount), "GetAllAsync method does not return values!");
+            Assert.That(actual.Count(), Is.EqualTo(expectedCount), "GetAllAsync method does not return values!");
         }
 
         [Test]
@@ -117,7 +118,7 @@ namespace FileStorageTest
             var user = context.Users.FirstOrDefault(u => u.UserName == "test3");
             int expectedCount = 3;
             //Act
-            context.Accounts.Remove(new Account {Id= user.Id });
+            context.Accounts.Remove(new Account { Id = user.Id });
             await accountRepository.SaveAsync();
             var actualCount = context.Accounts.Count();
             //Assert

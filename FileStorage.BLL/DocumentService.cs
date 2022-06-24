@@ -138,7 +138,7 @@ namespace FileStorage.BLL
 
             var account = await _context.Accounts.GetByIdAsync(user.Id);
 
-            long maxSize = long.Parse(_configuration.GetSection("Files")["MaxSizeSpace"]);
+            long maxSize = _options.Value.MaxSizeSpace;
 
             long futureMemory = account.UsedSpace + files.Sum(f => f.Length);
 

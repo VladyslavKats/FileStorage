@@ -5,6 +5,9 @@ using FileStorage.PL.Models;
 
 namespace FileStorage.PL.Common
 {
+    /// <summary>
+    /// Class for mapper configuration
+    /// </summary>
     public class MapperConfigViewModel : Profile
     {
         public MapperConfigViewModel()
