@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -41,16 +42,34 @@ namespace FileStorage.PL.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DocumentViewModel>>> GetAllAsync()
         {
-            var documents = await _documentService.GetAllAsync();
-            return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
+
+            try
+            {
+                var documents = await _documentService.GetAllAsync();
+                return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+            
         }
 
 
         [HttpGet("{userName}")]
         public async Task<ActionResult<IEnumerable<DocumentViewModel>>> GetAllByUserAsync(string userName)
         {
-            var documents = await _documentService.GetAllUserDocumentsAsync(userName);
-            return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
+            try
+            {
+                var documents = await _documentService.GetAllUserDocumentsAsync(userName);
+                return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
+            }
+            catch (Exception)
+            {
+
+                return BadRequest();
+            }
+            
         }
 
 
@@ -71,9 +90,9 @@ namespace FileStorage.PL.Controllers
                         return Ok(_mapper.Map<IEnumerable<DocumentViewModel>>(documents));
                 }
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
            
         }
@@ -87,10 +106,10 @@ namespace FileStorage.PL.Controllers
                 var bytes = await _documentService.GetDocumentBytesByPathAsync(model.Path);
                 return new FileContentResult(bytes, model.ContentType) { FileDownloadName = model.FileName };
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
 
@@ -103,10 +122,10 @@ namespace FileStorage.PL.Controllers
                 var result = await _documentService.UpdateAsync(document);
                 return Ok(_mapper.Map<DocumentViewModel>(result));
             }
-            catch (FileStorageException ex) 
+            catch (Exception) 
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
 
         }
@@ -121,10 +140,10 @@ namespace FileStorage.PL.Controllers
                 await _documentService.DeleteAsync(model.Id , model.UserName);
                 return Ok();
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
     }

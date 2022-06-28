@@ -65,7 +65,10 @@ namespace FileStorage.PL
                  options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
                 
 
-            services.AddIdentity<User, IdentityRole>(opt => opt.SignIn.RequireConfirmedEmail = true)
+            services.AddIdentity<User, IdentityRole>(opt => {
+                opt.Password.RequiredLength = 4;
+                
+            })
                 .AddEntityFrameworkStores<FileStorageContext>()
                 .AddDefaultTokenProviders();
 

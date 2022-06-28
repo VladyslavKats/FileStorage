@@ -31,10 +31,10 @@ namespace FileStorage.PL.Controllers
                 bool result = await _authService.CheckUserNameAsync(username);
                 return result;
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
 
@@ -56,10 +56,10 @@ namespace FileStorage.PL.Controllers
                     return BadRequest();
                 }
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
 
@@ -81,10 +81,9 @@ namespace FileStorage.PL.Controllers
                     return BadRequest("Error.Try later");
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-
-                return BadRequest("Error.Try later");
+                return BadRequest();
             }
         }
 
@@ -97,10 +96,10 @@ namespace FileStorage.PL.Controllers
                 var result = await _authService.LogInAsync(model);
                 return Ok(result);
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
 
@@ -113,10 +112,10 @@ namespace FileStorage.PL.Controllers
                 await _authService.RemoveUserAsync(userName);
                 return Ok();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
     }

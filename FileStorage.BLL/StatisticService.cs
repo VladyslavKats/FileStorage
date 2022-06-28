@@ -3,6 +3,7 @@ using FileStorage.BLL.Common;
 using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using FileStorage.DAL.Interfaces;
+using FileStorage.DAL.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
@@ -43,7 +44,17 @@ namespace FileStorage.BLL
         {
             var accounts = await _context.Accounts.GetAllAsync();
 
-            var result = _mapper.Map<IEnumerable<StatisticModel>>(accounts);
+            var accountsWithoutAdmin = new List<Account>();
+
+            foreach (var account in accounts)
+            {
+                if (!await _context.UserManager.IsInRoleAsync(account.User , "Admin"))
+                {
+                    accountsWithoutAdmin.Add(account);
+                }
+            }
+
+            var result = _mapper.Map<IEnumerable<StatisticModel>>(accountsWithoutAdmin.AsEnumerable());
 
             return result;
         }

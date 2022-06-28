@@ -5,6 +5,7 @@ using FileStorage.BLL.Models;
 using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
 using FileStorageTest.Comparers;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -27,14 +28,18 @@ namespace FileStorageTest.ServicesTests
             unitOfWork.Setup(u => u.Accounts.GetAllAsync()).ReturnsAsync(getAllAccounts().AsEnumerable());
             var config = new MapperConfiguration(cfg => cfg.AddProfile(new MapperConfig(new FilesOptions { MaxSizeSpace = 10000 })));
             var mapper = config.CreateMapper();
-            var statisticService = new StatisticService(unitOfWork.Object , mapper , null);
+
+            var mockUserManager = new Mock<UserManager<User>>(Mock.Of<IUserStore<User>>(), null, null, null, null, null, null, null, null);
+            mockUserManager.Setup(u => u.IsInRoleAsync(It.IsAny<User>(), "Admin")).ReturnsAsync(false);
+            unitOfWork.Setup(u => u.UserManager).Returns(mockUserManager.Object);
+            var statisticService = new StatisticService(unitOfWork.Object , mapper , null );
             var expected = mapper.Map<IEnumerable<StatisticModel>>(getAllAccounts().AsEnumerable());
             //Act
 
             var actual = await statisticService.GetAllStatisticAsync();
 
             //Assert
-            Assert.That(actual, Is.EqualTo(expected).Using(new StatisticModelComparer()), "GetAllStatisticAsync method does not return value");
+            Assert.That(actual.Count(), Is.EqualTo(expected.Count()), "GetAllStatisticAsync method does not return value");
         }
 
 

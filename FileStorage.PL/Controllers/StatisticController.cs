@@ -4,6 +4,7 @@ using FileStorage.BLL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -30,10 +31,10 @@ namespace FileStorage.PL.Controllers
                 var result = await _statisticService.GetAllStatisticAsync();
                 return Ok(result);
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
 
@@ -46,10 +47,10 @@ namespace FileStorage.PL.Controllers
                 var result = await _statisticService.GetUserStatisticAsync(id);
                 return Ok(result);
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
 
@@ -63,10 +64,10 @@ namespace FileStorage.PL.Controllers
                 var result = await _statisticService.GetTotalStatisticAsync();
                 return Ok(result);
             }
-            catch (FileStorageException ex)
+            catch (Exception)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
 
