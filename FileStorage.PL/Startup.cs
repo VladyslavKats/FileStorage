@@ -13,18 +13,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FileStorage.PL
 {
@@ -78,16 +71,17 @@ namespace FileStorage.PL
 
 
 
-            var filesOptions = Configuration.GetSection("Files").Get<FilesOptions>();
+            
             services.AddAutoMapperBuilder(builder =>
             {
-                builder.Profiles.AddRange(new Profile[] { new MapperConfigViewModel(), new MapperConfig(filesOptions) });
+                builder.Profiles.AddRange(new Profile[] { new MapperConfigViewModel(), new MapperConfig() });
             });
 
 
 
 
             services.AddTransient<IStorageUW, StorageUW>();
+            services.AddTransient<IFileService, FileService>();
             services.AddTransient<IDocumentService, DocumentService>();
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IStatisticService, StatisticService>();

@@ -24,8 +24,8 @@ namespace FileStorage.BLL
     {
         private readonly IStorageUW _context;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
         private readonly IOptions<FilesOptions> _options;
+        private readonly IFileService _fileService;
 
         /// <summary>
         /// Creates instance of service
@@ -33,11 +33,12 @@ namespace FileStorage.BLL
         /// <param name="context">Class for managing file storage</param>
         /// <param name="mapper">Mapper for models</param>
         /// <param name="options">Options for files settings</param>
-        public DocumentService(IStorageUW context , IMapper mapper , IOptions<FilesOptions> options)
+        public DocumentService(IStorageUW context , IMapper mapper , IOptions<FilesOptions> options , IFileService fileService)
         {
             _context = context;
             _mapper = mapper;
            _options = options;
+            _fileService = fileService;
         }
 
         /// <summary>
@@ -55,6 +56,7 @@ namespace FileStorage.BLL
 
             if (user == null)
                 throw new FileStorageAuthenticateException("Forbidden access to save file for unauthorized user");
+            
             var account = await _context.Accounts.GetByIdAsync(user.Id);
 
             long maxSize = _options.Value.MaxSizeSpace;
@@ -74,15 +76,10 @@ namespace FileStorage.BLL
            
             string filePath = Path.Combine(rootPath, file.FileName);
 
-            for (int index = 1; File.Exists(filePath); index++)
-            {
-                changeFileNameAndPath(fileName, filePath ,index, out fileName, out filePath);
-            }
-           
-            
-            using (var stream = new FileStream(filePath, FileMode.Create)) {
-                await file.CopyToAsync(stream);
-            }
+
+            _fileService.Save(file ,ref filePath , ref fileName);
+
+
             var document = new Document {
                 Name = fileName, 
                 Size = file.Length, 
@@ -96,29 +93,11 @@ namespace FileStorage.BLL
             account.Files += 1;
             account.UsedSpace = futureMemory;
             await _context.Accounts.UpdateAsync(account);
-
-
             await _context.SaveChangesAsync();
             return _mapper.Map<DocumentDto>(document);
         }
 
-        private void changeFileNameAndPath(string fileName, string filePath , int index , out string fileNameResult, out string filePathResult)
-        {
-            var splited = fileName.Split(".");
-
-            if (index == 1)
-            {
-                splited[0] = $"{splited[0]}({index})";
-                fileNameResult = string.Join(".", splited);
-            }
-            else {
-                fileNameResult = Regex.Replace(fileName, @"\(\d+\).", $"({index}).");
-            }
-           
-            filePathResult = changePath(filePath, fileNameResult);
-        }
-
-
+      
         /// <summary>
         /// Creates and adds files to database
         /// </summary>
@@ -150,6 +129,7 @@ namespace FileStorage.BLL
             string rootPath = Path.Combine(directory, username);
             if (!Directory.Exists(rootPath))
                 Directory.CreateDirectory(rootPath);
+
             List<Document> result = new List<Document>();
             foreach (var file in files)
             {
@@ -158,15 +138,9 @@ namespace FileStorage.BLL
 
                 string filePath = Path.Combine(rootPath, file.FileName);
 
-                for (int index = 1; File.Exists(filePath); index++)
-                {
-                    changeFileNameAndPath(fileName, filePath, index, out fileName, out filePath);
-                }
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
+                _fileService.Save(file ,ref filePath ,ref fileName);
+
                 var document = new Document
                 {
                     Name = fileName,
@@ -193,17 +167,16 @@ namespace FileStorage.BLL
         {
             var user = await _context.UserManager.FindByNameAsync(username);
             if (user == null)
-                return;
+                throw new FileStorageAuthenticateException();
 
             var account = await _context.Accounts.GetByIdAsync(user.Id);
 
 
             var document = await _context.Documents.GetAsNoTrackingAsync(id);
             if (document == null)
-                return;
+                throw new ArgumentNullException();
 
-            File.Delete(document.Path);
-
+            _fileService.Delete(document.Path);
             account.Files -= 1;
 
             account.UsedSpace -= document.Size;
@@ -242,46 +215,28 @@ namespace FileStorage.BLL
         /// </summary>
         /// <param name="document">Document with changes</param>
         /// <returns>Current document</returns>
-        public async Task<DocumentDto> UpdateAsync(DocumentDto document)
+        public async Task<DocumentDto> RenameAsync(DocumentDto document)
         {
-            string oldPath = document.Path;
-            string newPath = changePath(document.Path , document.Name);
-            string newName = document.Name;
-
             
+            document.Path = _fileService.Rename(document.Path ,document.Name , out string newNameIfExist);
+            document.Name = newNameIfExist;
 
-            for (int index = 1; File.Exists(newPath); index++)
-            {
-                changeFileNameAndPath(newName, newPath, index, out newName, out newPath);
-            }
-            File.Move(oldPath, newPath);
-            document.Path = newPath;
-            document.Name = newName;
+            var savedDocument = _mapper.Map<Document>(document);
 
-
-            var newDocument = _mapper.Map<Document>(document);
-
-            var result = await _context.Documents.UpdateAsync(newDocument);
+            var result = await _context.Documents.UpdateAsync(savedDocument);
             await _context.SaveChangesAsync();
             return _mapper.Map<DocumentDto>(result);
         }
 
-        private string changePath(string oldPath , string newNameFile) {
-            var words = oldPath.Split('\\');
-
-            words[^1] = newNameFile;
-            string newPath = string.Join('\\', words);
-            return newPath;
-        }
-
+       
         /// <summary>
         /// Returns document in bytes
         /// </summary>
         /// <param name="path">Path to document</param>
         /// <returns>Document is converted into bytes</returns>
-        public async Task<byte[]> GetDocumentBytesByPathAsync(string path)
+        public async Task<byte[]> DownloadAsync(string path)
         {
-            return await File.ReadAllBytesAsync(path);
+            return await _fileService.DownloadAsync(path);
         }
     }
 }

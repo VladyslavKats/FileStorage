@@ -103,7 +103,7 @@ namespace FileStorage.PL.Controllers
         {
             try
             {
-                var bytes = await _documentService.GetDocumentBytesByPathAsync(model.Path);
+                var bytes = await _documentService.DownloadAsync(model.Path);
                 return new FileContentResult(bytes, model.ContentType) { FileDownloadName = model.FileName };
             }
             catch (Exception)
@@ -119,7 +119,7 @@ namespace FileStorage.PL.Controllers
             try
             {
                 var document = _mapper.Map<DocumentDto>(model);
-                var result = await _documentService.UpdateAsync(document);
+                var result = await _documentService.RenameAsync(document);
                 return Ok(_mapper.Map<DocumentViewModel>(result));
             }
             catch (Exception) 

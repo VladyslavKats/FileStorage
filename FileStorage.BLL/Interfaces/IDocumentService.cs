@@ -35,13 +35,17 @@ namespace FileStorage.BLL.Interfaces
         /// </summary>
         /// <param name="path">Path to file</param>
         /// <returns>Bytes</returns>
-        Task<byte[]> GetDocumentBytesByPathAsync(string path);
+        Task<byte[]> DownloadAsync(string path);
+
+
         /// <summary>
-        /// Edits file name and path
+        /// Renames file name and path  if file exist 
         /// </summary>
         /// <param name="document">Document with changes</param>
         /// <returns>Current document</returns>
-        Task<DocumentDto> UpdateAsync(DocumentDto document);
+        Task<DocumentDto> RenameAsync(DocumentDto document);
+
+
         /// <summary>
         /// Deletes file and removes it in database
         /// </summary>
@@ -49,11 +53,15 @@ namespace FileStorage.BLL.Interfaces
         /// <param name="username">Owner`s name</param>
         /// <returns></returns>
         Task DeleteAsync(int id , string username);
+
+
         /// <summary>
         /// Returns all documents
         /// </summary>
         /// <returns>All documents</returns>
         Task<IEnumerable<DocumentDto>> GetAllAsync();
+
+
         /// <summary>
         /// Returns all user`s documents by name of user
         /// </summary>

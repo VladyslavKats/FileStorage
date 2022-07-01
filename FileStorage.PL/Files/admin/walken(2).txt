@@ -1,6 +1,0 @@
-0 -> 1     7 gem   1 wlkn
-1 -> 2     11 gem  3 wlkn
-2 -> 3     16 gem  11 wlkn
-3 -> 4     23 gem  24 wlkn
-4 -> 5     33 gem  56 wlkn
-5 -> 6     48 gem  120 wlkn

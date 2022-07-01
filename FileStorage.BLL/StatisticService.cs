@@ -4,12 +4,9 @@ using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FileStorage.BLL
@@ -20,7 +17,6 @@ namespace FileStorage.BLL
     public class StatisticService : IStatisticService
     {
         private readonly IStorageUW _context;
-        private readonly IMapper _mapper;
         private readonly IOptions<FilesOptions> _options;
         
         /// <summary>
@@ -29,10 +25,9 @@ namespace FileStorage.BLL
         /// <param name="context">Class for managing file storage</param>
         /// <param name="mapper">Mapper for models</param>
         /// <param name="options">Configuration for files</param>
-        public StatisticService(IStorageUW context , IMapper mapper , IOptions<FilesOptions> options)
+        public StatisticService(IStorageUW context , IOptions<FilesOptions> options)
         {
             _context = context;
-            _mapper = mapper;
             _options = options;
            
         }
@@ -54,7 +49,12 @@ namespace FileStorage.BLL
                 }
             }
 
-            var result = _mapper.Map<IEnumerable<StatisticModel>>(accountsWithoutAdmin.AsEnumerable());
+            var result = accountsWithoutAdmin.Select(account => new StatisticModel {
+                Files = account.Files,
+                MaxSpace = _options.Value.MaxSizeSpace,
+                UsedSpace = account.UsedSpace,
+                UserName = account.User.UserName
+            });
 
             return result;
         }
@@ -82,8 +82,13 @@ namespace FileStorage.BLL
 
             if (account == null)
                 throw new FileStorageArgumentException("There is not an account!");
-            var result = _mapper.Map<StatisticModel>(account);
-            return result; 
+
+            return new StatisticModel { 
+                Files = account.Files ,
+                MaxSpace = _options.Value.MaxSizeSpace ,
+                UsedSpace = account.UsedSpace , 
+                UserName = account.User.UserName 
+            };
         }
     }
 }
