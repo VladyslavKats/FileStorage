@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileStorage.DAL
+namespace FileStorage.DAL.Repositories
 {
     /// <summary>
     /// Class for managing documents
@@ -53,7 +53,7 @@ namespace FileStorage.DAL
         /// <returns>All documents</returns>
         public async Task<IEnumerable<Document>> GetAllAsync()
         {
-            return  await _context.Documents.Include(d => d.User).ToArrayAsync();
+            return await _context.Documents.Include(d => d.User).ToArrayAsync();
         }
         /// <summary>
         /// Returns all documents , but database does not track them
@@ -96,7 +96,7 @@ namespace FileStorage.DAL
         /// <returns>Current document</returns>
         public async Task<Document> UpdateAsync(Document document)
         {
-            
+
             await Task.Run(() => _context.Documents.Update(document));
             return document;
         }

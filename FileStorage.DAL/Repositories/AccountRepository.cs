@@ -8,8 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileStorage.DAL
-{   
+namespace FileStorage.DAL.Repositories
+{
 
     /// <summary>
     /// Class for managing accounts
@@ -35,7 +35,7 @@ namespace FileStorage.DAL
         /// <returns></returns>
         public async Task CreateAsync(string userId)
         {
-            await Task.Run(() => _context.Accounts.Add(new Account { Id = userId , Files = 0 , UsedSpace = 0}));
+            await Task.Run(() => _context.Accounts.Add(new Account { Id = userId, Files = 0, UsedSpace = 0 }));
         }
         /// <summary>
         /// Deletes account 
@@ -44,7 +44,7 @@ namespace FileStorage.DAL
         /// <returns></returns>
         public async Task DeleteAsync(string id)
         {
-           await Task.Run(() => _context.Accounts.Remove(new Account { Id = id })); 
+            await Task.Run(() => _context.Accounts.Remove(new Account { Id = id }));
         }
 
         /// <summary>
