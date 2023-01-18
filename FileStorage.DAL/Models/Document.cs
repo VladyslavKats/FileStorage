@@ -8,7 +8,7 @@
         /// <summary>
         /// Document id 
         /// </summary>
-        public int Id { get; set; }
+        public string Id { get; set; }
         /// <summary>
         /// Document name
         /// </summary>

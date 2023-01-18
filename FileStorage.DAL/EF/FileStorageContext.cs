@@ -23,12 +23,22 @@ namespace FileStorage.DAL.EF
             string ROLE_ID_USER = Guid.NewGuid().ToString();
             string ROLE_ID_ADMIN = Guid.NewGuid().ToString();
             builder.Entity<Document>()
+                .HasKey(d => d.Id);
+            builder.Entity<Document>()
+                .Property(d => d.Id)
+                .ValueGeneratedOnAdd();
+            builder.Entity<Document>()
                 .HasOne(d => d.User)
                 .WithMany(u => u.Documents)
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.Entity<Account>()
+            builder
+                .Entity<Account>()
                 .Property(a => a.Files)
                 .HasDefaultValue(0);
+            builder
+                .Entity<Account>()
+                .Property(a => a.Id)
+                .ValueGeneratedOnAdd();
             builder.Entity<Account>()
                 .Property(a => a.UsedSpace)
                 .HasDefaultValue(0);
@@ -70,7 +80,9 @@ namespace FileStorage.DAL.EF
             builder.Entity<Account>()
                .HasData(new Account { Id = ADMIN_ID, Files = 0, UsedSpace = 0 });
             //set user role to admin
-            builder.Entity<IdentityUserRole<string>>().HasData(new IdentityUserRole<string>
+            builder
+                .Entity<IdentityUserRole<string>>()
+                .HasData(new IdentityUserRole<string>
             {
                 RoleId = ROLE_ID_ADMIN,
                 UserId = ADMIN_ID

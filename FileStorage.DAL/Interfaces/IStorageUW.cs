@@ -1,8 +1,6 @@
 ﻿using FileStorage.DAL.Models;
 using Microsoft.AspNetCore.Identity;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FileStorage.DAL.Interfaces
@@ -23,11 +21,11 @@ namespace FileStorage.DAL.Interfaces
         /// <summary>
         /// Manages documents
         /// </summary>
-        IDocumentRepository Documents { get; }
+        IRepository<string,Document> Documents { get; }
         /// <summary>
         /// Manages accounts 
         /// </summary>
-        IAccountRepository Accounts { get; }
+        IRepository<string,Account> Accounts { get; }
         /// <summary>
         /// Save changes
         /// </summary>
