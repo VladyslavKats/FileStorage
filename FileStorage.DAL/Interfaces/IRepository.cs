@@ -19,6 +19,6 @@ namespace FileStorage.DAL.Interfaces
 
         Task DeleteAsync(TEntity entity);
 
-        Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<IEnumerable<TEntity>> GetAllAsync(IEnumerable<string> includeProperties = null);
     }
 }

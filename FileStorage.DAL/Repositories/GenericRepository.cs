@@ -36,8 +36,16 @@ namespace FileStorage.DAL.Repositories
             return Task.CompletedTask;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        public async Task<IEnumerable<TEntity>> GetAllAsync(IEnumerable<string> includeProperties = null)
         {
+            var query = _entities.AsQueryable();
+            if (includeProperties != null && includeProperties.Count() > 0)
+            {
+                foreach (var property in includeProperties)
+                {
+                    query.Include(property);
+                }
+            }
             return await _entities.ToListAsync();
         }
 

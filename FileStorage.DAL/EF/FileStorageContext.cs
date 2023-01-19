@@ -22,31 +22,9 @@ namespace FileStorage.DAL.EF
             string ADMIN_ID = Guid.NewGuid().ToString();
             string ROLE_ID_USER = Guid.NewGuid().ToString();
             string ROLE_ID_ADMIN = Guid.NewGuid().ToString();
-            builder.Entity<Document>()
-                .HasKey(d => d.Id);
-            builder.Entity<Document>()
-                .Property(d => d.Id)
-                .ValueGeneratedOnAdd();
-            builder.Entity<Document>()
-                .HasOne(d => d.User)
-                .WithMany(u => u.Documents)
-                .OnDelete(DeleteBehavior.Cascade);
-            builder
-                .Entity<Account>()
-                .Property(a => a.Files)
-                .HasDefaultValue(0);
-            builder
-                .Entity<Account>()
-                .Property(a => a.Id)
-                .ValueGeneratedOnAdd();
-            builder.Entity<Account>()
-                .Property(a => a.UsedSpace)
-                .HasDefaultValue(0);
-            builder.Entity<User>()
-                .HasOne(u => u.Account)
-                .WithOne(a => a.User)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasForeignKey<Account>(a => a.Id);
+            
+           
+            
             //seed admin and user role
             builder.Entity<IdentityRole>().HasData(new IdentityRole
             {
