@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FileStorage.BLL.Models
+﻿namespace FileStorage.BLL.Models
 {
     /// <summary>
     /// Total statistic of file storage

@@ -1,5 +1,4 @@
-﻿using FileStorage.BLL.Common;
-using FileStorage.BLL.Interfaces;
+﻿using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +19,6 @@ namespace FileStorage.PL.Controllers
             _authService = authService;
             
         }
-
 
         [HttpGet("{username}")]
         public async Task<ActionResult<bool>> CheckUserNameAsync(string username)

@@ -1,9 +1,12 @@
 using AutoMapper;
 using AutoMapperBuilder.Extensions.DependencyInjection;
+using Azure.Storage.Blobs;
 using FileStorage.BLL;
-using FileStorage.BLL.Common;
 using FileStorage.BLL.Interfaces;
+using FileStorage.BLL.Mapper;
 using FileStorage.BLL.Models;
+using FileStorage.BLL.Options;
+using FileStorage.BLL.Services;
 using FileStorage.DAL;
 using FileStorage.DAL.EF;
 using FileStorage.DAL.Interfaces;
@@ -33,14 +36,10 @@ namespace FileStorage.PL
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var authOptioinsCofiguration = Configuration.GetSection("Auth");
-            var smtpOptioinsCofiguration = Configuration.GetSection("Smtp");
-            var filesOptionsConfiguration = Configuration.GetSection("Files");
-
-            services.Configure<AuthOptions>(authOptioinsCofiguration);
-            services.Configure<SmtpOptions>(smtpOptioinsCofiguration);
-            services.Configure<FilesOptions>(filesOptionsConfiguration);
-            
+            services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
+            services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
+            services.Configure<FilesOptions>(Configuration.GetSection("Files"));
+            services.Configure<AzureStorageOptions>(Configuration.GetSection("AzureStorage"));
            
 
 
@@ -49,15 +48,12 @@ namespace FileStorage.PL
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
-                
             }));
 
 
             services.AddControllers();
             services.AddDbContext<FileStorageContext>(options =>
                  options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-                
-
             services.AddIdentity<User, IdentityRole>(opt => {
                 opt.Password.RequiredLength = 4;
                 
@@ -80,13 +76,16 @@ namespace FileStorage.PL
 
 
 
-            services.AddTransient<IStorageUW, StorageUW>();
-            services.AddTransient<IFileService, FileService>();
-            services.AddTransient<IDocumentService, DocumentService>();
-            services.AddTransient<IAuthService, AuthService>();
-            services.AddTransient<IStatisticService, StatisticService>();
+            services.AddScoped<IStorageUW, StorageUW>();
+            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IStatisticService, StatisticService>();
             services.AddScoped<IEmailService, EmailService>();
-
+            services.AddScoped( _ =>
+            {
+                return new BlobServiceClient(Configuration["AzureStorage:ConnectionString"]);
+            });
 
             var authOptions = Configuration.GetSection("Auth").Get<AuthOptions>();
 
@@ -118,10 +117,8 @@ namespace FileStorage.PL
                         }
                         )
              );
-
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseCors("AllowAll");
@@ -131,17 +128,10 @@ namespace FileStorage.PL
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthentication();
-
             app.UseAuthorization();
-
-
-            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

@@ -4,7 +4,7 @@ using FileStorage.DAL.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace FileStorage.BLL.Common
+namespace FileStorage.BLL.Mapper
 {
     /// <summary>
     /// Defines configuration for mapper
@@ -14,7 +14,6 @@ namespace FileStorage.BLL.Common
         public MapperConfig()
         {
             CreateMap<Document, DocumentDto>().ReverseMap();
-                
         }
     }
 }

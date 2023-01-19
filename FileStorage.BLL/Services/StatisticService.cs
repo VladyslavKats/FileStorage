@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using FileStorage.BLL.Common;
+using FileStorage.BLL.Exceptions;
 using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using FileStorage.DAL.Interfaces;
@@ -11,57 +11,30 @@ using System.Threading.Tasks;
 
 namespace FileStorage.BLL
 {
-    /// <summary>
-    /// Service for getting statistic of file storage
-    /// </summary>
     public class StatisticService : IStatisticService
     {
         private readonly IStorageUW _context;
         private readonly IOptions<FilesOptions> _options;
         
-        /// <summary>
-        /// Creates instance of service
-        /// </summary>
-        /// <param name="context">Class for managing file storage</param>
-        /// <param name="mapper">Mapper for models</param>
-        /// <param name="options">Configuration for files</param>
         public StatisticService(IStorageUW context , IOptions<FilesOptions> options)
         {
             _context = context;
             _options = options;
            
         }
-        /// <summary>
-        /// Returns statistic of every user
-        /// </summary>
-        /// <returns>Users statistc</returns>
-        public async Task<IEnumerable<StatisticModel>> GetAllStatisticAsync()
+        
+        public async Task<IEnumerable<StatisticModel>> GetStatisticAllUsersAsync()
         {
             var accounts = await _context.Accounts.GetAllAsync();
-
-            var accountsWithoutAdmin = new List<Account>();
-
-            foreach (var account in accounts)
-            {
-                if (!await _context.UserManager.IsInRoleAsync(account.User , "Admin"))
-                {
-                    accountsWithoutAdmin.Add(account);
-                }
-            }
-
-            var result = accountsWithoutAdmin.Select(account => new StatisticModel {
+            var result = accounts.Select(account => new StatisticModel {
                 Files = account.Files,
                 MaxSpace = _options.Value.MaxSizeSpace,
                 UsedSpace = account.UsedSpace,
                 UserName = account.User.UserName
             });
-
             return result;
         }
-        /// <summary>
-        /// Return total statistic of storage
-        /// </summary>
-        /// <returns>Total statistic</returns>
+ 
         public async Task<TotalStatisticModel> GetTotalStatisticAsync()
         {
             var accounts = await _context.Accounts.GetAllAsync();
@@ -70,22 +43,17 @@ namespace FileStorage.BLL
             var maxSpace = _options.Value.TotalSpace;
             return new TotalStatisticModel { TotalFiles = totalFiles, TotalUsedSpace = totalSpace , MaxSpace = maxSpace };
         }
-        /// <summary>
-        /// Returns user`s statistic
-        /// </summary>
-        /// <param name="userId">User`s id</param>
-        /// <returns>User`s statistic</returns>
-        /// <exception cref="FileStorageArgumentException"></exception>
-        public async Task<StatisticModel> GetUserStatisticAsync(string userId)
+
+        public async Task<StatisticModel> GetStatisticByUserAsync(string userId)
         {
             var account = await _context.Accounts.GetByIdAsync(userId);
-
             if (account == null)
-                throw new FileStorageArgumentException("There is not an account!");
-
+            {
+                throw new EntityDoesNotExistException("Account with such id does not exist");
+            }
             return new StatisticModel { 
                 Files = account.Files ,
-                MaxSpace = _options.Value.MaxSizeSpace ,
+                MaxSpace = _options.Value.MaxSizeSpace,
                 UsedSpace = account.UsedSpace , 
                 UserName = account.User.UserName 
             };

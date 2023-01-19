@@ -29,11 +29,11 @@ namespace FileStorage.BLL.Models
         /// <summary>
         /// Path to document
         /// </summary>
-        public string Path { get; set; }
+        public string Url { get; set; }
         /// <summary>
         /// Owner`s id
         /// </summary>
-        public string? UserId { get; set; }
+        public string UserId { get; set; }
         /// <summary>
         /// Owner
         /// </summary>

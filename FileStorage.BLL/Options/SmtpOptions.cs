@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FileStorage.BLL.Models
+namespace FileStorage.BLL.Options
 {
     /// <summary>
     /// Options for email service

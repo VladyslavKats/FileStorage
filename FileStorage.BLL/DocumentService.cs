@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using FileStorage.BLL.Common;
+using FileStorage.BLL.Exceptions;
 using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using FileStorage.DAL.Interfaces;
@@ -12,14 +12,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FileStorage.BLL
 {
-    /// <summary>
-    /// Service for managing documents
-    /// </summary>
+    
     public class DocumentService : IDocumentService
     {
         private readonly IStorageUW _context;
@@ -27,12 +24,7 @@ namespace FileStorage.BLL
         private readonly IOptions<FilesOptions> _options;
         private readonly IFileService _fileService;
 
-        /// <summary>
-        /// Creates instance of service
-        /// </summary>
-        /// <param name="context">Class for managing file storage</param>
-        /// <param name="mapper">Mapper for models</param>
-        /// <param name="options">Options for files settings</param>
+        
         public DocumentService(IStorageUW context , IMapper mapper , IOptions<FilesOptions> options , IFileService fileService)
         {
             _context = context;
@@ -41,21 +33,13 @@ namespace FileStorage.BLL
             _fileService = fileService;
         }
 
-        /// <summary>
-        /// Creates and adds file to database
-        /// </summary>
-        /// <param name="file">File</param>
-        /// <param name="directory">Path to directory with files</param>
-        /// <param name="username">User`s name</param>
-        /// <returns>Current file</returns>
-        /// <exception cref="FileStorageAuthenticateException">Occurs when user have not access for it</exception>
-        /// <exception cref="FileStorageException">Occurs when data is incorrect</exception>
+        
         public async Task<DocumentDto> AddAsync(IFormFile file, string directory , string username)
         {
             var user = await _context.UserManager.FindByNameAsync(username);
 
             if (user == null)
-                throw new FileStorageAuthenticateException("Forbidden access to save file for unauthorized user");
+                throw new AuthenticateException("Forbidden access to save file for unauthorized user");
             
             var account = await _context.Accounts.GetByIdAsync(user.Id);
 
@@ -98,21 +82,13 @@ namespace FileStorage.BLL
         }
 
       
-        /// <summary>
-        /// Creates and adds files to database
-        /// </summary>
-        /// <param name="files">Files to create</param>
-        /// <param name="directory">Path to directory with files</param>
-        /// <param name="username">User`s name</param>
-        /// <returns>Current files</returns>
-        /// <exception cref="FileStorageAuthenticateException">Occurs when user does not exist</exception>
-        /// <exception cref="FileStorageException">Occurs when data is incorrect</exception>
+        
         public async Task<IEnumerable<DocumentDto>> AddRangeAsync(IEnumerable<IFormFile> files, string directory, string username)
         {
             var user = await _context.UserManager.FindByNameAsync(username);
 
             if (user == null)
-                throw new FileStorageAuthenticateException("Forbidden access to save file for unauthorized user");
+                throw new AuthenticateException("Forbidden access to save file for unauthorized user");
 
 
             var account = await _context.Accounts.GetByIdAsync(user.Id);
@@ -157,17 +133,12 @@ namespace FileStorage.BLL
             return _mapper.Map<IEnumerable<DocumentDto>>(result.ToArray());
         }
 
-        /// <summary>
-        /// Deletes file 
-        /// </summary>
-        /// <param name="id">Ducument`s id</param>
-        /// <param name="username">User`s name</param>
-        /// <returns></returns>
+        
         public async Task DeleteAsync(int id , string username)
         {
             var user = await _context.UserManager.FindByNameAsync(username);
             if (user == null)
-                throw new FileStorageAuthenticateException();
+                throw new AuthenticateException();
 
             var account = await _context.Accounts.GetByIdAsync(user.Id);
 
@@ -186,22 +157,12 @@ namespace FileStorage.BLL
             await _context.SaveChangesAsync();
         }
 
-
-        /// <summary>
-        /// Returns all documents
-        /// </summary>
-        /// <returns>All documents</returns>
         public async Task<IEnumerable<DocumentDto>> GetAllAsync()
         {
             var documents = await _context.Documents.GetAllAsync();
             return _mapper.Map<IEnumerable<DocumentDto>>(documents);
         }
 
-        /// <summary>
-        /// Returns all user`s documents
-        /// </summary>
-        /// <param name="username">User`s name</param>
-        /// <returns>User`s documents</returns>
         public async Task<IEnumerable<DocumentDto>> GetAllUserDocumentsAsync(string username)
         {
             var documents = await _context.Documents.GetAllAsync();
@@ -209,12 +170,6 @@ namespace FileStorage.BLL
             return _mapper.Map<IEnumerable<DocumentDto>>(userDocuments); 
         }
 
-
-        /// <summary>
-        /// Changes file data
-        /// </summary>
-        /// <param name="document">Document with changes</param>
-        /// <returns>Current document</returns>
         public async Task<DocumentDto> RenameAsync(DocumentDto document)
         {
             
@@ -229,11 +184,6 @@ namespace FileStorage.BLL
         }
 
        
-        /// <summary>
-        /// Returns document in bytes
-        /// </summary>
-        /// <param name="path">Path to document</param>
-        /// <returns>Document is converted into bytes</returns>
         public async Task<byte[]> DownloadAsync(string path)
         {
             return await _fileService.DownloadAsync(path);
