@@ -46,7 +46,7 @@ namespace FileStorage.BLL
 
         public async Task<StatisticModel> GetStatisticByUserAsync(string userId)
         {
-            var account = await _context.Accounts.GetByIdAsync(userId);
+            var account = await _context.Accounts.GetAsync(userId);
             if (account == null)
             {
                 throw new EntityDoesNotExistException("Account with such id does not exist");

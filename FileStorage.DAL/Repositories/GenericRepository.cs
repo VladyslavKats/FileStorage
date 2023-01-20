@@ -62,7 +62,7 @@ namespace FileStorage.DAL.Repositories
             return await query.FirstOrDefaultAsync(predicator);
         }
 
-        public async Task<TEntity> GetByIdAsync(TId id, IEnumerable<string> includeProperties = null)
+        public async Task<TEntity> GetAsync(TId id, IEnumerable<string> includeProperties = null)
         {
             var query = _entities.AsQueryable();
             if (includeProperties != null && includeProperties.Count() != 0)

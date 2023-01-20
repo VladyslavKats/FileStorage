@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using FileStorage.BLL.Interfaces;
+using FileStorage.BLL.Models;
 using FileStorage.BLL.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -35,11 +36,17 @@ namespace FileStorage.BLL.Services
             return content.Value.Content.ToArray();
         }
 
-        public async Task UploadAsync(IFormFile file)
+        public async Task<FileDetails> UploadAsync(IFormFile file , string name)
         {
             var container = _blobClient.GetBlobContainerClient(_options.UserFilesContainer);
-            var blob = container.GetBlobClient(file.Name);
+            var blob = container.GetBlobClient(name);
             await blob.UploadAsync(file.OpenReadStream());
+            return new FileDetails
+            {
+                Name = file.FileName,
+                Size = file.Length,
+                ContentType = file.ContentType
+            };
         }
     }
 }

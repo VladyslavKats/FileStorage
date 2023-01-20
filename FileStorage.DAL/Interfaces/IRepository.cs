@@ -9,7 +9,7 @@ namespace FileStorage.DAL.Interfaces
     {
         Task<TEntity> AddAsync(TEntity entity);
 
-        Task<TEntity> GetByIdAsync(TId id , IEnumerable<string> includeProperties = null);
+        Task<TEntity> GetAsync(TId id , IEnumerable<string> includeProperties = null);
 
         Task<TEntity> GetAsync(Expression<Func<TEntity , bool>> predicator , IEnumerable<string> includeProperties = null);
 

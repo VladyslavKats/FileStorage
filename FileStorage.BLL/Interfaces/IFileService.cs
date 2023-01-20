@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FileStorage.BLL.Models;
+using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
 namespace FileStorage.BLL.Interfaces
 {
     public interface IFileService
     {
-        Task UploadAsync(IFormFile file);
+        Task<FileDetails> UploadAsync(IFormFile file , string name);
 
         Task DeleteAsync(string fileName);
 
