@@ -1,6 +1,7 @@
 ﻿using FileStorage.BLL.Exceptions;
 using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
+using FileStorage.DAL.Enums;
 using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
 using Microsoft.AspNetCore.WebUtilities;
@@ -46,7 +47,7 @@ namespace FileStorage.BLL
         {
             var userExist = await _context.Users.FindByEmailAsync(model.Email);
             if (userExist != null)
-                throw new Exceptions.ArgumentException("User has already existed");
+                throw new RegisterException("Such user already exist");
             var user = new User
             {
                 Email = model.Email,
@@ -55,14 +56,17 @@ namespace FileStorage.BLL
             var result = await _context.Users.CreateAsync(user, model.Password);
             if (!result.Succeeded)
                 throw new RegisterException("Error was occured while registration");
-            await _context.Users.AddToRoleAsync(user, "User");
+            await _context.Users.AddToRoleAsync(user, Roles.Default);
             var token = await _context.Users.GenerateEmailConfirmationTokenAsync(user);
             await SendCofirmationToken(token , user.UserName , user.Email, urlForConfirmation);
             await _context.Accounts.AddAsync(new Account { Id = user.Id });
             await _context.CommitAsync();
         }
 
-        private async Task SendCofirmationToken(string token , string userName , string email, string url)
+        private async Task SendCofirmationToken(string token , 
+            string userName , 
+            string email, 
+            string url)
         {
             byte[] tokenGeneratedBytes = Encoding.UTF8.GetBytes(token);
             var codeEncoded = WebEncoders.Base64UrlEncode(tokenGeneratedBytes);

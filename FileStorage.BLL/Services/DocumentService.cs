@@ -81,26 +81,32 @@ namespace FileStorage.BLL
             return $"{userId}-{fileName}";
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task DeleteAsync(string id,string userId)
         {
             var document = await _context.Documents.GetAsync(id);
             if (document == null)
             {
                 throw new EntityDoesNotExistException("Document with such id does not exist");
             }
-            await _fileService.DeleteAsync(document.Name);
+            await _fileService.DeleteAsync(GetName(document.Name , userId));
             await _context.Documents.DeleteAsync(document);
             await _context.CommitAsync();
         }
 
-        public async Task<byte[]> DownloadAsync(string id)
+        public async Task<DownloadModel> DownloadAsync(string id , string userId)
         {
             var document = await _context.Documents.GetAsync(id);
             if (document == null)
             {
                 throw new EntityDoesNotExistException("Document with such id does not exist");
             }
-            return await _fileService.DownloadAsync(document.Name);
+            var file =  await _fileService.DownloadAsync(GetName(document.Name, userId));
+            return new DownloadModel
+            {
+                 Name = document.Name,
+                 ContentType = document.ContentType,
+                 Document = file
+            };
         }
 
         public async Task<IEnumerable<DocumentDto>> GetAllAsync()

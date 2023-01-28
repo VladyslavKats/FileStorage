@@ -11,9 +11,9 @@ namespace FileStorage.BLL.Interfaces
 
         Task AddAsync(IEnumerable<IFormFile> files, string userId);
 
-        Task<byte[]> DownloadAsync(string id);
+        Task<DownloadModel> DownloadAsync(string id , string userId);
 
-        Task DeleteAsync(string id);
+        Task DeleteAsync(string id , string userId);
 
         Task<IEnumerable<DocumentDto>> GetAllAsync();
 

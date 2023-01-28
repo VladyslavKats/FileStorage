@@ -40,7 +40,7 @@ namespace FileStorage.BLL.Services
         {
             var container = _blobClient.GetBlobContainerClient(_options.UserFilesContainer);
             var blob = container.GetBlobClient(name);
-            await blob.UploadAsync(file.OpenReadStream());
+            await blob.UploadAsync(file.OpenReadStream(),overwrite:true);
             return new FileDetails
             {
                 Name = file.FileName,

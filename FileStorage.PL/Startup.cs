@@ -12,6 +12,8 @@ using FileStorage.DAL.EF;
 using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
 using FileStorage.PL.Common;
+using FileStorage.PL.Middlewares;
+using FileStorage.PL.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,7 +22,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 namespace FileStorage.PL
 {
@@ -33,52 +37,33 @@ namespace FileStorage.PL
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
             services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
             services.Configure<FilesOptions>(Configuration.GetSection("Files"));
             services.Configure<AzureStorageOptions>(Configuration.GetSection("AzureStorage"));
-           
-
-
             services.AddCors(opt => opt.AddPolicy("AllowAll", builder => {
                 builder
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
             }));
-
-
             services.AddControllers();
             services.AddDbContext<FileStorageContext>(options =>
                  options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddIdentity<User, IdentityRole>(opt => {
                 opt.Password.RequiredLength = 4;
-                
             })
                 .AddEntityFrameworkStores<FileStorageContext>()
                 .AddDefaultTokenProviders();
-
-
-
-
-
-
-
-            
-            services.AddAutoMapperBuilder(builder =>
-            {
-                builder.Profiles.AddRange(new Profile[] { new MapperConfigViewModel(), new MapperConfig() });
-            });
-
-
-
-
+            services.AddAutoMapper(typeof(Startup).Assembly, typeof(MapperConfig).Assembly);
+            services.AddTransient(typeof(CurrentUser));
+            services.AddTransient<IDatabaseInitializer,DatabaseInitializer>();
             services.AddScoped<IStorageUW, StorageUW>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IStatisticService, StatisticService>();
             services.AddScoped<IEmailService, EmailService>();
@@ -86,27 +71,27 @@ namespace FileStorage.PL
             {
                 return new BlobServiceClient(Configuration["AzureStorage:ConnectionString"]);
             });
-
-            var authOptions = Configuration.GetSection("Auth").Get<AuthOptions>();
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
                 .AddJwtBearer(options => {
                     options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
-                        ValidIssuer = authOptions.Issuer,
-
+                        ValidIssuer = Configuration["Auth:Issuer"],
                         ValidateAudience = true,
-                        ValidAudience = authOptions.Audience,
-
+                        ValidAudience = Configuration["Auth:Audience"],
                         ValidateLifetime = true,
-
-                        IssuerSigningKey = authOptions.GetSymmetricSecurityKey(),
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(Configuration["Auth:Secret"])
+                        ),
                         ValidateIssuerSigningKey = true
                     };
                 });
-
             services.AddSwaggerGen(
                 opt => opt.SwaggerDoc(
                         "v1",
@@ -128,6 +113,7 @@ namespace FileStorage.PL
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            app.UseExceptionHandling();
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthentication();
