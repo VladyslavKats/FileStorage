@@ -1,5 +1,4 @@
-﻿using FileStorage.BLL.Common;
-using FileStorage.BLL.Interfaces;
+﻿using FileStorage.BLL.Interfaces;
 using FileStorage.BLL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -21,102 +20,37 @@ namespace FileStorage.PL.Controllers
             
         }
 
-
         [HttpGet("{username}")]
-        public async Task<ActionResult<bool>> CheckUserNameAsync(string username)
+        public async Task<ActionResult> CheckUserNameAsync(string username)
         {
-            try
-            {
-               
-                bool result = await _authService.CheckUserNameAsync(username);
-                return result;
-            }
-            catch (Exception)
-            {
-
-                return BadRequest();
-            }
+            var result = await _authService.CheckUserNameAsync(username);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("signup")]
-        public async Task<ActionResult> SignUpAsync(RegisterModel model)
+        public async Task<ActionResult> SignUpAsync([FromBody]RegisterModel model)
         {
-            try
-            {
-                var request = HttpContext.Request;
-               
-                var url = $"{request.Scheme}://{request.Host}/";
-                var result = await _authService.SignUpAsync(model , url);
-                if (result) {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
-            catch (Exception)
-            {
-
-                return BadRequest();
-            }
+            var request = HttpContext.Request;
+            var url = $"{request.Scheme}://{request.Host}/";
+            await _authService.SignUpAsync(model , url);
+            return Ok();
         }
 
-
-
         [HttpGet]
-        [Route("confirmEmail")]
+        [Route("confirmemail")]
         public async Task<ActionResult> ConfirmEmail([FromQuery]string username , [FromQuery]string token)
         {
-            try
-            {
-                var result = await _authService.ConfirmEmailAsync(username , token);
-                if (result)
-                {
-                    return Ok("Email has been confirmed!");
-                }
-                else
-                {
-                    return BadRequest("Error.Try later");
-                }
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            await _authService.ConfirmEmailAsync(username , token);
+            return Ok("Email has been confirmed!");
         }
 
         [HttpPost]
         [Route("login")]
         public async Task<ActionResult<AuthenticateResponse>> LogInAsync(AuthenticateModel model)
         {
-            try
-            {
-                var result = await _authService.LogInAsync(model);
-                return Ok(result);
-            }
-            catch (Exception)
-            {
-
-                return BadRequest();
-            }
-        }
-
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
-        [HttpDelete("{userName}")]
-        public async Task<ActionResult> DeleteAsync(string userName)
-        {
-            try
-            {
-                await _authService.RemoveUserAsync(userName);
-                return Ok();
-            }
-            catch (Exception)
-            {
-
-                return BadRequest();
-            }
+            var result = await _authService.LogInAsync(model);
+            return Ok(result);
         }
     }
 }

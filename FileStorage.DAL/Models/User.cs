@@ -1,8 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Identity;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace FileStorage.DAL.Models
 {
@@ -11,6 +9,10 @@ namespace FileStorage.DAL.Models
     /// </summary>
     public class User : IdentityUser
     {
+        /// <summary>
+        /// Account id 
+        /// </summary>
+        public string AccountId { get; set; }
         /// <summary>
         /// User`s account
         /// </summary>

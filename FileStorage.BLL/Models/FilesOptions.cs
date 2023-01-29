@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FileStorage.BLL.Models
+﻿namespace FileStorage.BLL.Models
 {
     /// <summary>
     /// Contains configuration for files settings
     /// </summary>
     public class FilesOptions
     {
- 
         /// <summary>
         /// Name for directory with files
         /// </summary>

@@ -1,14 +1,19 @@
 using AutoMapper;
 using AutoMapperBuilder.Extensions.DependencyInjection;
+using Azure.Storage.Blobs;
 using FileStorage.BLL;
-using FileStorage.BLL.Common;
 using FileStorage.BLL.Interfaces;
+using FileStorage.BLL.Mapper;
 using FileStorage.BLL.Models;
+using FileStorage.BLL.Options;
+using FileStorage.BLL.Services;
 using FileStorage.DAL;
 using FileStorage.DAL.EF;
 using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
 using FileStorage.PL.Common;
+using FileStorage.PL.Middlewares;
+using FileStorage.PL.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +22,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 namespace FileStorage.PL
 {
@@ -30,84 +37,61 @@ namespace FileStorage.PL
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var authOptioinsCofiguration = Configuration.GetSection("Auth");
-            var smtpOptioinsCofiguration = Configuration.GetSection("Smtp");
-            var filesOptionsConfiguration = Configuration.GetSection("Files");
-
-            services.Configure<AuthOptions>(authOptioinsCofiguration);
-            services.Configure<SmtpOptions>(smtpOptioinsCofiguration);
-            services.Configure<FilesOptions>(filesOptionsConfiguration);
-            
-           
-
-
+            services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
+            services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
+            services.Configure<FilesOptions>(Configuration.GetSection("Files"));
+            services.Configure<AzureStorageOptions>(Configuration.GetSection("AzureStorage"));
             services.AddCors(opt => opt.AddPolicy("AllowAll", builder => {
                 builder
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
-                
             }));
-
-
             services.AddControllers();
             services.AddDbContext<FileStorageContext>(options =>
                  options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-                
-
             services.AddIdentity<User, IdentityRole>(opt => {
                 opt.Password.RequiredLength = 4;
-                
             })
                 .AddEntityFrameworkStores<FileStorageContext>()
                 .AddDefaultTokenProviders();
-
-
-
-
-
-
-
-            
-            services.AddAutoMapperBuilder(builder =>
-            {
-                builder.Profiles.AddRange(new Profile[] { new MapperConfigViewModel(), new MapperConfig() });
-            });
-
-
-
-
-            services.AddTransient<IStorageUW, StorageUW>();
-            services.AddTransient<IFileService, FileService>();
-            services.AddTransient<IDocumentService, DocumentService>();
-            services.AddTransient<IAuthService, AuthService>();
-            services.AddTransient<IStatisticService, StatisticService>();
+            services.AddAutoMapper(typeof(Startup).Assembly, typeof(MapperConfig).Assembly);
+            services.AddTransient(typeof(CurrentUser));
+            services.AddTransient<IDatabaseInitializer,DatabaseInitializer>();
+            services.AddScoped<IStorageUW, StorageUW>();
+            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IStatisticService, StatisticService>();
             services.AddScoped<IEmailService, EmailService>();
-
-
-            var authOptions = Configuration.GetSection("Auth").Get<AuthOptions>();
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            services.AddScoped( _ =>
+            {
+                return new BlobServiceClient(Configuration["AzureStorage:ConnectionString"]);
+            });
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
                 .AddJwtBearer(options => {
                     options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
-                        ValidIssuer = authOptions.Issuer,
-
+                        ValidIssuer = Configuration["Auth:Issuer"],
                         ValidateAudience = true,
-                        ValidAudience = authOptions.Audience,
-
+                        ValidAudience = Configuration["Auth:Audience"],
                         ValidateLifetime = true,
-
-                        IssuerSigningKey = authOptions.GetSymmetricSecurityKey(),
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(Configuration["Auth:Secret"])
+                        ),
                         ValidateIssuerSigningKey = true
                     };
                 });
-
             services.AddSwaggerGen(
                 opt => opt.SwaggerDoc(
                         "v1",
@@ -118,10 +102,8 @@ namespace FileStorage.PL
                         }
                         )
              );
-
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseCors("AllowAll");
@@ -131,17 +113,11 @@ namespace FileStorage.PL
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseExceptionHandling();
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthentication();
-
             app.UseAuthorization();
-
-
-            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

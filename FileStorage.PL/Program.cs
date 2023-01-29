@@ -1,15 +1,11 @@
 using FileStorage.DAL.EF;
+using FileStorage.DAL.Interfaces;
 using FileStorage.DAL.Models;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FileStorage.PL
 {
@@ -17,7 +13,24 @@ namespace FileStorage.PL
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var builder = CreateHostBuilder(args).Build();
+            using (var scope = builder.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                var dbInitializer = services.GetRequiredService<IDatabaseInitializer>();
+                try
+                {
+                    logger.LogInformation("Initializing database...");
+                    dbInitializer.Initialize();
+                    logger.LogInformation("Database is initialized");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex , ex.Message);
+                }
+            }
+            builder.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

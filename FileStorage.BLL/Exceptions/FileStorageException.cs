@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace FileStorage.BLL.Common
+namespace FileStorage.BLL.Exceptions
 {
     /// <summary>
     /// Represents errors that occur during file storage execution

@@ -1,8 +1,6 @@
 ﻿using FileStorage.DAL.Models;
 using Microsoft.AspNetCore.Identity;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FileStorage.DAL.Interfaces
@@ -10,28 +8,28 @@ namespace FileStorage.DAL.Interfaces
     /// <summary>
     /// Contains repositories for manage file storage
     /// </summary>
-    public interface IStorageUW
+    public interface IStorageUW : IDisposable
     {
         /// <summary>
         /// Manages users
         /// </summary>
-        UserManager<User> UserManager { get; }
+        UserManager<User> Users { get; }
         /// <summary>
         /// Manages roles
         /// </summary>
-        RoleManager<IdentityRole> RoleManager { get; } 
+        RoleManager<IdentityRole> Roles { get; } 
         /// <summary>
         /// Manages documents
         /// </summary>
-        IDocumentRepository Documents { get; }
+        IRepository<string,Document> Documents { get; }
         /// <summary>
         /// Manages accounts 
         /// </summary>
-        IAccountRepository Accounts { get; }
+        IRepository<string,Account> Accounts { get; }
         /// <summary>
         /// Save changes
         /// </summary>
         /// <returns></returns>
-        Task SaveChangesAsync();
+        Task CommitAsync();
     }
 }

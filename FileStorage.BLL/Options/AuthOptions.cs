@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace FileStorage.BLL.Models
+namespace FileStorage.BLL.Options
 {
     /// <summary>
     /// Model of configuration for generate jwt token
